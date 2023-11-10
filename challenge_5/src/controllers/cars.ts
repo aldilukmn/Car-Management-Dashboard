@@ -1,30 +1,27 @@
 import { Request, Response } from "express";
-import listCar from "../../data/cars.json";
-import listCars from "../../data/cars-min.json";
+// import listCar from "../../data/cars.json";
+// import listCars from "../../data/cars-min.json";
 import Car from "../models/entity/car";
 import CarRequest from "../models/dto/car";
 import DefaultResponse from "../models/dto/response";
-import fs from "fs";
 import cloudinary from "../utils/cloudinary";
 import db from "../../config/knex";
-import carService from "../services/car";
-import { get } from "http";
 import env from "dotenv";
 env.config();
 
 export default class Cars {
   static async listCar(req: Request, res: Response) {
+    const size = req.query.size;
+    let data: Car[];
     try {
       const cars = await db.select("*").from(`${process.env.TABLE}`);
-
       cars.sort((a, b) => {
         const dateA = new Date(a.update).getTime();
         const dateB = new Date(b.update).getTime();
-
         return dateB - dateA;
       });
 
-      const data: Car[] = cars.map((car) => {
+      const getTimeData = cars.map((car) => {
         const getDate = new Date(car.update);
         const monthName = getDate.toLocaleString("id-ID", { month: "long" });
         const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
@@ -40,13 +37,16 @@ export default class Cars {
           size: car.size,
         };
       });
-
+      if (size) {
+        data = getTimeData.filter((car) => car.size === size);
+      } else {
+        data = getTimeData;
+      }
       const response: DefaultResponse = {
         status: "OK",
         message: "Data successfully retrieved",
         data: data,
       };
-
       res.status(200).json(response);
     } catch (error) {
       console.error("Error fetching cars:", error);
@@ -61,6 +61,7 @@ export default class Cars {
   static async createCar(req: Request, res: Response) {
     const payload: CarRequest = req.body;
     const image: any = req.file?.path;
+    const typeImage: any = req.file?.mimetype;
 
     try {
       if (!payload.name || !payload.rent || !payload.size || !image) {
@@ -81,8 +82,19 @@ export default class Cars {
         return res.status(404).json(response);
       }
 
+      if (
+        typeImage != "image/png" &&
+        typeImage != "image/jpg" &&
+        typeImage != "image/jpeg"
+      ) {
+        const response: DefaultResponse = {
+          status: "Bad Request",
+          message: `It's not image format!`,
+        };
+        return res.status(400).json(response);
+      }
       cloudinary.uploader.upload(
-        image,
+        image.path,
         { folder: "dump" },
         async function (err: any, result: any) {
           if (err) {
@@ -241,208 +253,210 @@ export default class Cars {
       message: "Car successfully updated",
     });
   }
-
-  // static formAddNewCar(req: Request, res: Response) {
-  //   res.status(200).render('add-new-car/add-new-car',
-  //     {
-  //       layout: 'pages/index'
-  //     })
-  // }
-
-  // static getCars(req: Request, res: Response) {
-  //   // const updateDataForImage: Car[] = listCar.map((car, id) => {
-  //   //   return {
-  //   //     id: id + 1,
-  //   //     image: car.image.replace(/^\.\//, '/'),
-  //   //     name: car.model,
-  //   //     rent: car.rentPerDay,
-  //   //     update: car.availableAt,
-  //   //   }
-  //   // })
-  //   // fs.writeFileSync('./data/cars-min.json', JSON.stringify(updateDataForImage));
-
-  //   listCars.sort((a, b) => {
-  //     const dateA = new Date(a.update).getTime();
-  //     const dateB = new Date(b.update).getTime();
-
-  //     return dateB - dateA;
-  //   });
-
-  //   const data: Car[] = listCars.map((car) => {
-  //     const getDate = new Date(car.update);
-  //     const monthName = getDate.toLocaleString("id-ID", { month: "long" });
-  //     const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
-  //       "id-ID",
-  //       { hour: "2-digit", minute: "2-digit" }
-  //     )}`;
-  //     return {
-  //       id: car.id,
-  //       image: car.image,
-  //       name: car.name,
-  //       rent: car.rent,
-  //       update: getTime,
-  //       size: car.size,
-  //     };
-  //   });
-
-  //   const response: DefaultResponse = {
-  //     status: "OK",
-  //     message: "Success retrieving data",
-  //     data: data,
-  //   };
-
-  //   res.status(200).json(response);
-  // }
-
-  // static addNewCar(req: Request, res: Response) {
-  //   const payload: CarRequest = req.body;
-  //   const image: any = req.file?.path;
-
-  //   cloudinary.uploader.upload(
-  //     image,
-  //     { folder: "dump" },
-  //     function (err: any, result: any) {
-  //       if (err) {
-  //         console.log("Error => ", err);
-  //         return res.status(500).json({
-  //           status: "Error",
-  //           message: "Failed to upload image to Cloudinary",
-  //         });
-  //       }
-
-  //       const newCar: Car = {
-  //         id: listCars.length - 1 + 1,
-  //         image: result.secure_url,
-  //         name: payload.name,
-  //         rent: parseInt(payload.rent),
-  //         update: new Date().toISOString(),
-  //         size: payload.size,
-  //       };
-
-  //       const response: DefaultResponse = {
-  //         status: "OK",
-  //         message: "Car successfully created",
-  //         data: {
-  //           image: newCar.image,
-  //           name: newCar.name,
-  //           rent: newCar.rent,
-  //           update: newCar.update,
-  //           size: newCar.size,
-  //         },
-  //       };
-
-  //       // listCars.push(newCar);
-  //       fs.writeFileSync("./data/cars-min.json", JSON.stringify(listCars));
-  //       res.status(201).json(response);
-  //     }
-  //   );
-  // }
-
-  // static delCar(req: Request, res: Response) {
-  //   const id = parseInt(req.params.id as string) as number;
-
-  //   const findId = listCars.find((car) => car.id === id);
-
-  //   if (!findId) {
-  //     const response: DefaultResponse = {
-  //       status: "Bad Request",
-  //       message: "Id not found!",
-  //     };
-  //     return res.status(404).json(response);
-  //   }
-
-  //   const data: Car[] = listCars.filter((car) => {
-  //     return car.id != id;
-  //   });
-  //   fs.writeFileSync("./data/cars-min.json", JSON.stringify(data));
-  //   res.status(200).json(data);
-  // }
-
-  // static getCarById(req: Request, res: Response) {
-  //   const getUserId: number = parseInt(req.params.id as string);
-
-  //   const filterById = listCars.find((car) => car.id === getUserId);
-  //   if (!filterById) {
-  //     const response: DefaultResponse = {
-  //       status: "Bad Request",
-  //       message: "Id not found!",
-  //     };
-  //     return res.status(404).json(response);
-  //   }
-
-  //   const response: DefaultResponse = {
-  //     status: "OK",
-  //     message: "Id has found",
-  //     data: filterById,
-  //   };
-
-  //   res.status(200).json(response);
-  // }
-
-  // static upCar(req: Request, res: Response) {
-  //   const getUserId: number = parseInt(req.params.id as string);
-  //   const filterById = listCars.find((car) => car.id === getUserId);
-  //   if (!filterById) {
-  //     const response: DefaultResponse = {
-  //       status: "Bad Request",
-  //       message: "Id not found!",
-  //     };
-  //     return res.status(404).json(response);
-  //   }
-
-  //   const image: any = req.file?.path;
-  //   if (image) {
-  //     cloudinary.uploader.upload(
-  //       image,
-  //       { folder: "dump" },
-  //       function (err: any, result: any) {
-  //         if (err) {
-  //           console.log("Error => ", err);
-  //           return res.status(500).json({
-  //             status: "Error",
-  //             message: "Failed to upload image to Cloudinary",
-  //           });
-  //         }
-
-  //         const updateImage = result.secure_url;
-  //         Cars.saveUpdate(req, res, filterById, updateImage);
-  //       }
-  //     );
-  //   } else {
-  //     Cars.saveUpdate(req, res, filterById);
-  //   }
-  // }
-
-  // static saveUpdate(
-  //   req: Request,
-  //   res: Response,
-  //   filterById: Car,
-  //   updateImage?: string
-  // ) {
-  //   filterById.update = new Date().toISOString();
-
-  //   const payload: CarRequest = req.body;
-
-  //   Object.assign(filterById, {
-  //     id: filterById.id,
-  //     name: payload.name || filterById.name,
-  //     rent: parseInt(payload.rent) || filterById.rent,
-  //     size: payload.size || filterById.size,
-  //     image: updateImage || filterById.image,
-  //     update: new Date().toISOString(),
-  //   });
-
-  //   // const indexOfCar = listCars.indexOf(filterById);
-
-  //   // listCars[indexOfCar] = filterById;
-
-  //   fs.writeFileSync("./data/cars-min.json", JSON.stringify(listCars));
-
-  //   const response: DefaultResponse = {
-  //     status: "OK",
-  //     message: "Id has found",
-  //     data: filterById,
-  //   };
-  //   res.status(200).json(response);
-  // }
 }
+
+// For reference
+
+// static formAddNewCar(req: Request, res: Response) {
+//   res.status(200).render('add-new-car/add-new-car',
+//     {
+//       layout: 'pages/index'
+//     })
+// }
+
+// static getCars(req: Request, res: Response) {
+//   // const updateDataForImage: Car[] = listCar.map((car, id) => {
+//   //   return {
+//   //     id: id + 1,
+//   //     image: car.image.replace(/^\.\//, '/'),
+//   //     name: car.model,
+//   //     rent: car.rentPerDay,
+//   //     update: car.availableAt,
+//   //   }
+//   // })
+//   // fs.writeFileSync('./data/cars-min.json', JSON.stringify(updateDataForImage));
+
+//   listCars.sort((a, b) => {
+//     const dateA = new Date(a.update).getTime();
+//     const dateB = new Date(b.update).getTime();
+
+//     return dateB - dateA;
+//   });
+
+//   const data: Car[] = listCars.map((car) => {
+//     const getDate = new Date(car.update);
+//     const monthName = getDate.toLocaleString("id-ID", { month: "long" });
+//     const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
+//       "id-ID",
+//       { hour: "2-digit", minute: "2-digit" }
+//     )}`;
+//     return {
+//       id: car.id,
+//       image: car.image,
+//       name: car.name,
+//       rent: car.rent,
+//       update: getTime,
+//       size: car.size,
+//     };
+//   });
+
+//   const response: DefaultResponse = {
+//     status: "OK",
+//     message: "Success retrieving data",
+//     data: data,
+//   };
+
+//   res.status(200).json(response);
+// }
+
+// static addNewCar(req: Request, res: Response) {
+//   const payload: CarRequest = req.body;
+//   const image: any = req.file?.path;
+
+//   cloudinary.uploader.upload(
+//     image,
+//     { folder: "dump" },
+//     function (err: any, result: any) {
+//       if (err) {
+//         console.log("Error => ", err);
+//         return res.status(500).json({
+//           status: "Error",
+//           message: "Failed to upload image to Cloudinary",
+//         });
+//       }
+
+//       const newCar: Car = {
+//         id: listCars.length - 1 + 1,
+//         image: result.secure_url,
+//         name: payload.name,
+//         rent: parseInt(payload.rent),
+//         update: new Date().toISOString(),
+//         size: payload.size,
+//       };
+
+//       const response: DefaultResponse = {
+//         status: "OK",
+//         message: "Car successfully created",
+//         data: {
+//           image: newCar.image,
+//           name: newCar.name,
+//           rent: newCar.rent,
+//           update: newCar.update,
+//           size: newCar.size,
+//         },
+//       };
+
+//       // listCars.push(newCar);
+//       fs.writeFileSync("./data/cars-min.json", JSON.stringify(listCars));
+//       res.status(201).json(response);
+//     }
+//   );
+// }
+
+// static delCar(req: Request, res: Response) {
+//   const id = parseInt(req.params.id as string) as number;
+
+//   const findId = listCars.find((car) => car.id === id);
+
+//   if (!findId) {
+//     const response: DefaultResponse = {
+//       status: "Bad Request",
+//       message: "Id not found!",
+//     };
+//     return res.status(404).json(response);
+//   }
+
+//   const data: Car[] = listCars.filter((car) => {
+//     return car.id != id;
+//   });
+//   fs.writeFileSync("./data/cars-min.json", JSON.stringify(data));
+//   res.status(200).json(data);
+// }
+
+// static getCarById(req: Request, res: Response) {
+//   const getUserId: number = parseInt(req.params.id as string);
+
+//   const filterById = listCars.find((car) => car.id === getUserId);
+//   if (!filterById) {
+//     const response: DefaultResponse = {
+//       status: "Bad Request",
+//       message: "Id not found!",
+//     };
+//     return res.status(404).json(response);
+//   }
+
+//   const response: DefaultResponse = {
+//     status: "OK",
+//     message: "Id has found",
+//     data: filterById,
+//   };
+
+//   res.status(200).json(response);
+// }
+
+// static upCar(req: Request, res: Response) {
+//   const getUserId: number = parseInt(req.params.id as string);
+//   const filterById = listCars.find((car) => car.id === getUserId);
+//   if (!filterById) {
+//     const response: DefaultResponse = {
+//       status: "Bad Request",
+//       message: "Id not found!",
+//     };
+//     return res.status(404).json(response);
+//   }
+
+//   const image: any = req.file?.path;
+//   if (image) {
+//     cloudinary.uploader.upload(
+//       image,
+//       { folder: "dump" },
+//       function (err: any, result: any) {
+//         if (err) {
+//           console.log("Error => ", err);
+//           return res.status(500).json({
+//             status: "Error",
+//             message: "Failed to upload image to Cloudinary",
+//           });
+//         }
+
+//         const updateImage = result.secure_url;
+//         Cars.saveUpdate(req, res, filterById, updateImage);
+//       }
+//     );
+//   } else {
+//     Cars.saveUpdate(req, res, filterById);
+//   }
+// }
+
+// static saveUpdate(
+//   req: Request,
+//   res: Response,
+//   filterById: Car,
+//   updateImage?: string
+// ) {
+//   filterById.update = new Date().toISOString();
+
+//   const payload: CarRequest = req.body;
+
+//   Object.assign(filterById, {
+//     id: filterById.id,
+//     name: payload.name || filterById.name,
+//     rent: parseInt(payload.rent) || filterById.rent,
+//     size: payload.size || filterById.size,
+//     image: updateImage || filterById.image,
+//     update: new Date().toISOString(),
+//   });
+
+//   // const indexOfCar = listCars.indexOf(filterById);
+
+//   // listCars[indexOfCar] = filterById;
+
+//   fs.writeFileSync("./data/cars-min.json", JSON.stringify(listCars));
+
+//   const response: DefaultResponse = {
+//     status: "OK",
+//     message: "Id has found",
+//     data: filterById,
+//   };
+//   res.status(200).json(response);
+// }

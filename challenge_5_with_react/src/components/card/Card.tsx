@@ -16,10 +16,7 @@ export default function Card({
 
   const fetchCars = async () => {
     try {
-      let data = await Car.fetchCars();
-      if (selectedFilter) {
-        data = [...data].filter((car) => car.size === selectedFilter);
-      }
+      let data = await Car.listCar(selectedFilter);
       setCars(data);
     } catch (error) {
       console.log("Error => ", error);
@@ -124,7 +121,7 @@ export default function Card({
   };
 
   const editCar = async (id: number) => {
-    await Car.getCarById(id);
+    await Car.getCar(id);
     navigate(`/edit-car/${id}`);
   };
 

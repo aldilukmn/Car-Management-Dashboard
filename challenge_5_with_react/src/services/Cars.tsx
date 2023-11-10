@@ -1,7 +1,7 @@
 export class Car {
-  static fetchCars = async () => {
+  static listCar = async (size?: string | null) => {
     try {
-      const response = await fetch("http://localhost:8085/v1/cars", {
+      const response = await fetch(`http://localhost:8085/v1/cars${size ? '?size=' + size : ''}`, {
         method: "GET",
       });
       const result = await response.json();
@@ -21,7 +21,7 @@ export class Car {
     }
   };
 
-  static getCarById = async (id: number) => {
+  static getCar = async (id: number) => {
     try {
       const response = await fetch(`http://localhost:8085/v1/cars/${id}`, {
         method: "GET",
@@ -32,7 +32,4 @@ export class Car {
       console.error("Error deleting or fetching data:", error);
     }
   };
-
-  // static update
-
 }
