@@ -1,0 +1,66 @@
+<div class="d-flex flex-column justify-content-end w-100">
+  <section class="flex-grow-1 mx-4 mt-4" style="height: 100vh">
+    <p class="active-list-1">
+      <span class="fw-bold">Cars</span>
+      <img
+        src="/svg/chevron-right-solid.svg"
+        alt="chevron-right-solid-icon"
+        width="5"
+      />
+      <a
+        href="/v1/cars"
+        class="fw-bold link-underline link-underline-opacity-0 link-dark"
+        >List Car</a
+      >
+      <img
+        src="/svg/chevron-right-solid.svg"
+        alt="chevron-right-solid-icon"
+        width="5"
+      />
+      <span>Add New Car</span>
+    </p>
+    <div class="mb-4 active-list-2">
+      <div class="fw-bold">Add New Car</div>
+    </div>
+    <form id="form-new-car" class="row mb-4 rounded-1" action="/v1/cars/new-car" method="post" enctype="multipart/form-data">
+      <div class="border bg-white shadow-sm pt-4">
+        <div class="row mb-3">
+          <label for="name" class="col-sm-2 col-form-label">Name</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="name" name="name" />
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="rent" class="col-sm-2 col-form-label"
+            >Sewa Per Hari</label
+          >
+          <div class="col-sm-4">
+            <input type="num" class="form-control" id="rent" name="rent"/>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="size" class="col-sm-2 col-form-label">Ukuran</label>
+          <div class="col-sm-4">
+            <select class="form-select" id="size" name="size">
+              <option value="">Pilih Ukuran</option>
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="image" class="col-sm-2 col-form-label">Foto</label>
+          <div class="col-sm-4">
+            <input type="file" id="image" class="form-control" name="image"/>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 mb-4 btn-submit">
+        <a href="/v1/cars" class="btn btn-white fw-bold me-3 rounded-1">Cancel</a>
+        <button id="submit-new-car" type="submit" class="btn btn-primary fw-bold rounded-1 px-4" disabled>Save</button>
+      </div>
+    </form>
+  </section>
+  <%- include('../partials/footer') %>
+</div>

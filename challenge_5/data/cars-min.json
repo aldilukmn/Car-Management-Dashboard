@@ -1,0 +1,26 @@
+[
+  {
+    "id": 2,
+    "image": "https://res.cloudinary.com/dhtfq9yw8/image/upload/v1699445279/dump/b6eho51dztsnysmv7jta.jpg",
+    "name": "Ini Mobil Kuning",
+    "rent": 1234567,
+    "update": "2023-11-08T12:18:50.075Z",
+    "size": "large"
+  },
+  {
+    "id": 4,
+    "image": "https://res.cloudinary.com/dhtfq9yw8/image/upload/v1699445904/dump/mbitqhtxnbo6yszmbbvb.jpg",
+    "name": "Mobil saya",
+    "rent": 987654321,
+    "update": "2023-11-08T12:18:25.453Z",
+    "size": "small"
+  },
+  {
+    "id": 2,
+    "image": "https://res.cloudinary.com/dhtfq9yw8/image/upload/v1699446008/dump/kgaol1gaqfhvy5mw3hbk.jpg",
+    "name": "Mini Cooper",
+    "rent": 999999999,
+    "update": "2023-11-08T12:20:08.938Z",
+    "size": "small"
+  }
+]
