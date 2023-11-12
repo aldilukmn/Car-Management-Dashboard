@@ -17,7 +17,7 @@ export default function EditCar() {
 
   const fetchData = async () => {
     try {
-      const result = await Car.getCarById(parseIntId);
+      const result = await Car.getCar(parseIntId);
       setName(result.data.name);
       setRent(result.data.rent);
       setSize(result.data.size);

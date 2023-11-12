@@ -1,27 +1,40 @@
 import { Request, Response } from "express";
-// import listCar from "../../data/cars.json";
-// import listCars from "../../data/cars-min.json";
 import Car from "../models/entity/car";
 import CarRequest from "../models/dto/car";
 import DefaultResponse from "../models/dto/response";
 import cloudinary from "../utils/cloudinary";
 import db from "../../config/knex";
 import env from "dotenv";
+import client from "../../config/redis";
 env.config();
 
 export default class Cars {
+  static cars: Car[] | null = null;
+
   static async listCar(req: Request, res: Response) {
     const size = req.query.size;
-    let data: Car[];
+    if (!client.isReady) {
+      await client.connect();
+      console.log("Koneksi Lagi");
+    }
     try {
-      const cars = await db.select("*").from(`${process.env.TABLE}`);
-      cars.sort((a, b) => {
+      const storedData = await client.get("cars");
+      if (storedData) {
+        Cars.cars = JSON.parse(storedData);
+        console.log("Redis ON");
+      } else {
+        Cars.cars = await db.select("*").from(`${process.env.TABLE}`);
+        await client.setEx("cars", 60, JSON.stringify(Cars.cars));
+        await client.quit();
+        console.log("Set Redis");
+      }
+      Cars.cars?.sort((a, b) => {
         const dateA = new Date(a.update).getTime();
         const dateB = new Date(b.update).getTime();
         return dateB - dateA;
       });
 
-      const getTimeData = cars.map((car) => {
+      const convertUpdate = Cars.cars?.map((car) => {
         const getDate = new Date(car.update);
         const monthName = getDate.toLocaleString("id-ID", { month: "long" });
         const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
@@ -37,15 +50,17 @@ export default class Cars {
           size: car.size,
         };
       });
+
       if (size) {
-        data = getTimeData.filter((car) => car.size === size);
+        Cars.cars = convertUpdate?.filter((car) => car.size === size) || [];
       } else {
-        data = getTimeData;
+        Cars.cars = convertUpdate || [];
       }
+
       const response: DefaultResponse = {
         status: "OK",
         message: "Data successfully retrieved",
-        data: data,
+        data: Cars.cars || [],
       };
       res.status(200).json(response);
     } catch (error) {
@@ -94,7 +109,7 @@ export default class Cars {
         return res.status(400).json(response);
       }
       cloudinary.uploader.upload(
-        image.path,
+        image,
         { folder: "dump" },
         async function (err: any, result: any) {
           if (err) {
@@ -116,6 +131,13 @@ export default class Cars {
             status: "OK",
             message: "Car successfully created",
           };
+
+          if(!client.isReady) {
+            await client.connect();
+          }
+          await client.del("cars");
+
+          console.log(response);
           res.status(201).json(response);
         }
       );
@@ -132,9 +154,9 @@ export default class Cars {
   static async getCar(req: Request, res: Response) {
     const carId: number = Number(req.params.id);
     try {
-      const car = await db(`${process.env.TABLE}`).where({ id: carId }).first();
+      // const car = await db(`${process.env.TABLE}`).where({ id: carId }).first();
 
-      if (!car) {
+      if (!Cars.cars) {
         const response: DefaultResponse = {
           status: "Not Found",
           message: "Car not found",
@@ -142,10 +164,12 @@ export default class Cars {
         return res.status(404).json(response);
       }
 
+      const getCar = Cars.cars.filter((car) => car.id === carId);
+
       const response: DefaultResponse = {
         status: "OK",
         message: "Car has found",
-        data: car,
+        data: getCar,
       };
 
       res.status(200).json(response);
@@ -178,6 +202,11 @@ export default class Cars {
         status: "OK",
         message: "Car has been deleted",
       };
+
+      if (!client.isReady) {
+        await client.connect();
+      }
+      await client.del("cars");
 
       res.status(200).json(response);
     } catch (error) {
@@ -247,6 +276,11 @@ export default class Cars {
         image: imageUrl,
         update: new Date().toISOString(),
       });
+
+    if (!client.isReady) {
+      await client.connect();
+    }
+    await client.del("cars");
 
     res.status(200).json({
       status: "OK",

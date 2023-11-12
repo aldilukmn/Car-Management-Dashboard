@@ -1,0 +1,33 @@
+# GEt http://localhost:8085/v1/cars
+
+# GET http://localhost:8085/v1/cars/2
+
+# PATCH http://localhost:8085/v1/cars/3
+# Content-Type: application/json
+
+# {
+#     "name": "Mobil saya"
+# }
+
+# POST http://localhost:8085/v1/cars
+# Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="name"
+
+# Mobilan 15
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="rent"
+
+# 1500000
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="size"
+
+# small
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="image"; filename="1699181814326-david.jpg"
+# Content-Type: image/jpeg
+
+# < img/1699181814326-david.jpg
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+

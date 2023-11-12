@@ -125,6 +125,7 @@ export default function Card({
     navigate(`/edit-car/${id}`);
   };
 
+
   useEffect(() => {
     fetchCars();
   }, [selectedFilter]);
