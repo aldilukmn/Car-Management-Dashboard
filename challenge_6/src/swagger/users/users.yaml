@@ -1,0 +1,19 @@
+paths:
+  /users:
+    get:
+      summary: List Users
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              example:
+                status:
+                  code: 200
+                  response: 'success'
+                  message: '"Data successfully retrieved'
+                result:
+                  user:
+                    id: 1
+                    name: 'John Doe'
+                    email: 'john@example.com'

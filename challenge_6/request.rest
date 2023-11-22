@@ -1,4 +1,38 @@
-# GEt http://localhost:8085/v1/cars
+### USER REGISTER
+POST http://localhost:8085/v1/register
+Content-Type: application/json
+
+{
+    "email": "aldi@gmail.com",
+    "username": "aldi",
+    "password": "aldi12345",
+}
+
+### USER LOGIN
+POST http://localhost:8085/v1/login
+Content-Type: application/json
+
+{
+    "username": "aldi",
+    "password": "aldi12345"
+}
+
+### USER LOGOUT
+DELETE http://localhost:8085/v1/logout
+
+### GET DATA AFTER LOGIN
+GET http://localhost:8085/v1/cars
+
+### GET ALL DATA AFTER LOGIN
+GET http://localhost:8085/v1/admin
+
+
+
+
+
+
+
+
 
 # GET http://localhost:8085/v1/cars/2
 

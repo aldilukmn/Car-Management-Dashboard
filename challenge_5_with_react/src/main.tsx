@@ -9,11 +9,15 @@ import NewCar from "./components/content/NewCar.tsx";
 import ListCar from "./components/content/ListCar.tsx";
 import EditCar from "./components/content/EditCar.tsx";
 import Car from "./components/content/Car.tsx";
+import Login from "./components/user/Login.tsx";
+import Register from "./components/user/Register.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
+        <Route path="/register" element={<Register/>} />
+        <Route path="/login" element={<Login/>} />
         <Route path="/" element={<App/>}>
           <Route index element={<Car/>} />
           <Route path="list-car" element={<ListCar/>}/>

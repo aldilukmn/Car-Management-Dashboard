@@ -1,0 +1,29 @@
+paths:
+  /login:
+    post:
+      summary: User Login
+      consumes:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: User login
+          content:
+            application/json:
+              example:
+                status:
+                  code: 200
+                  response: 'success'
+                  message: 'User successfully login'
+                result:
+                  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiYWxkaSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzAwNjQ0NzI5LCJleHAiOjE3MDA2NDgzMjl9.mp0LpB3gIcWgLRA_-P89EXG-67_ReLnNsXScVBJBUn0'

@@ -1,0 +1,14 @@
+paths:
+  /logout:
+    delete:
+      summary: User Logout
+      responses:
+        '200':
+          description: User logout
+          content:
+            application/json:
+              example:
+                status:
+                  code: 200
+                  response: 'success'
+                  message: 'User successfully logout'

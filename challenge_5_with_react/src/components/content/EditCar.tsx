@@ -22,7 +22,9 @@ export default function EditCar() {
       setRent(result.data.rent);
       setSize(result.data.size);
       setImage(result.data.image);
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleChange = (

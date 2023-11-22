@@ -1,0 +1,19 @@
+paths:
+  /cars:
+    get:
+      summary: List Cars
+      responses:
+        '200':
+          description: Data successfully retrieved
+          content:
+            application/json:
+              example:
+                status:
+                  code: 200
+                  response: 'success'
+                  message: 'Cars retrieved successfully'
+                result:
+                  - brand: 'Toyota'
+                    model: 'Camry'
+                  - brand: 'Honda'
+                    model: 'Civic'
