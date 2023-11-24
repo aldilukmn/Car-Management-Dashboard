@@ -1,0 +1,38 @@
+paths:
+  /user/register:
+    post:
+      summary: Register Member
+      consumes:
+        - multipart/form-data
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+                image_url:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Register Member
+          content:
+            application/json:
+              example:
+                status:
+                  code: 201
+                  response: 'success'
+                  message: 'User successfully created'
+                result:
+                  email: 'susi@mail.com'
+                  username: 'susi'
+                  password: '$2b$10$I5UDJTFKk2950qlEhyOMoO6nnp38h.7T91kMIvter433EE6jlg6UW'
+                  image_url: 'https://res.cloudinary.com/dhtfq9yw8/image/upload/v1700836658/user/sp9k3gvqhtjnfnrpb4bz.png'
+                  role: 'member'

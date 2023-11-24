@@ -90,7 +90,7 @@ export default class UsersService {
         throw ({
           message: `${
             !payload.username ? "username" : 
-            !payload.password ? "password" : null} is required!}`
+            !payload.password ? "password" : null}  is required!`
         })
         }
       

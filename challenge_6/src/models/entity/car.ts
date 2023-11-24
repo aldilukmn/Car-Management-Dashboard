@@ -3,7 +3,7 @@ export default interface Car {
     name: string,
     rent: number,
     size: string,
-    image: string,
+    image_url: string,
     added_by: string,
     updated_by: string,
     updated_at: string,

@@ -10,42 +10,42 @@ export default class CarsService {
     try {
       let getCar: Car[] = await CarRepository.getAllCars();
 
-    getCar.sort((a, b) => {
+      getCar.sort((a, b) => {
       const dateA = new Date(a.updated_at).getTime();
       const dateB = new Date(b.updated_at).getTime();
       return dateB - dateA;
-    });
+      });
 
-    const convertUpdate = getCar?.map((car) => {
-      const getDate = new Date(car.updated_at);
-      const monthName = getDate.toLocaleString("id-ID", { month: "long" });
-      const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
-        "id-ID",
-        { hour: "2-digit", minute: "2-digit" }
-      )}`;
-      return {
-        id: car.id,
-        image: car.image,
-        name: car.name,
-        rent: car.rent,
-        size: car.size,
-        added_by: car.added_by,
-        updated_by: car.updated_by,
-        updated_at: getTime,
-      };
-    });
+      const convertUpdate = getCar?.map((car) => {
+        const getDate = new Date(car.updated_at);
+        const monthName = getDate.toLocaleString("id-ID", { month: "long" });
+        const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
+          "id-ID",
+          { hour: "2-digit", minute: "2-digit" }
+        )}`;
+        return {
+          id: car.id,
+          name: car.name,
+          rent: car.rent,
+          size: car.size,
+          image_url: car.image_url,
+          added_by: car.added_by,
+          updated_by: car.updated_by,
+          updated_at: getTime,
+        };
+      });
 
-    if (size) {
-      getCar = convertUpdate.filter((car) => car.size === size);
-    } else {
-      getCar = convertUpdate;
+      if (size) {
+        getCar = convertUpdate.filter((car) => car.size === size);
+      } else {
+        getCar = convertUpdate;
+      }
+
+      return getCar
+      } catch (error: any) {
+        throw error.message;
+      }
     }
-
-    return getCar
-    } catch (error: any) {
-      throw error.message;
-    }
-  }
 
   static async createCar(payload: CarRequest, image: any, typeImage: any, getUser: string, getRole: string) {
     try {
@@ -105,14 +105,32 @@ export default class CarsService {
   }
 
   static async getCarById(carId: number) {
-    const getCar = await CarRepository.getCarById(carId);
     try {
+      const getCar = await CarRepository.getCarById(carId);
       if (!getCar) {
         throw ({
           message: "Car not found"
         })
       }
-      return getCar;
+
+      const getDate = new Date(getCar.updated_at);
+      const monthName = getDate.toLocaleString("id-ID", { month: "long" });
+      const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
+        "id-ID",
+        { hour: "2-digit", minute: "2-digit" }
+      )}`;
+
+      const transformedCar: Car = {
+        id: getCar.id,
+        name: getCar.name,
+        rent: getCar.rent,
+        size: getCar.size,
+        image_url: getCar.image_url,
+        added_by: getCar.added_by,
+        updated_by: getCar.updated_by,
+        updated_at: getTime,
+      }
+      return transformedCar;
     } catch (error: any) {
       throw error.message
     }

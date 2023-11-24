@@ -140,5 +140,4 @@ export default class Users {
 
     res.status(response.status.code).json(response);
   }
-
 }

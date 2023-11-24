@@ -21,5 +21,5 @@ app.use(cookieParse());
 app.use('/api', router);
 
 app.listen(process.env.PORT, () => {
-  console.log(`Server is running on http://localhost:${process.env.PORT}/v1/cars`);
+  console.log(`Server is running on http://localhost:${process.env.PORT}/api/v1/cars`);
 });

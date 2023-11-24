@@ -1,0 +1,30 @@
+paths:
+  /cars/{id}:
+    get:
+      summary: Get Car by Id
+      parameters:
+        - name: id
+          in: path
+          description: ID of the car to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Car has found
+          content:
+            application/json:
+              example:
+                status:
+                  code: 200
+                  response: 'success'
+                  message: 'Car has found'
+                result:
+                  - id: 1
+                    name: 'Toyota'
+                    rent: 225000
+                    size: 'medium'
+                    image_url: 'https://res.cloudinary.com/dhtfq9yw8/image/upload/v1700791612/dump/nrmphvd38stmcobyhg6s.jpg'
+                    added_by: 'admin'
+                    updated_by: 'admin'
+                    updated_at: '24 November 2023, 13.25'
