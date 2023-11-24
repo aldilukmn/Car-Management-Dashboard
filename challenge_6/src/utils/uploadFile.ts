@@ -10,7 +10,7 @@ const imageStorage: StorageEngine = multer.diskStorage({
     }
 });
 
-const handleImage = multer({ storage: imageStorage }).single('image');
+const handleImage = multer({ storage: imageStorage }).single('image_url');
 
 export default handleImage;
 

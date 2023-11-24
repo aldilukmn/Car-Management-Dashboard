@@ -18,8 +18,15 @@ export async function up(knex: Knex): Promise<void> {
     table.integer("rent");
     table.string("size", 12);
     table.text("image_url");
-    table.string("update", 56);
+    table.boolean("is_available").defaultTo(true);
     table.string("added_by", 56);
+    table.string("created_by", 56);
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.string("updated_by", 56);
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
+    table.string("deleted_by", 56);
+    table.timestamp("deleted_at").defaultTo(null);
+    table.boolean("is_deleted").defaultTo(false);
   });
 }
 

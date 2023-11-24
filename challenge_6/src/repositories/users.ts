@@ -19,4 +19,8 @@ export default class UserRepository {
   static async getUsers() {
     return await db.select("email", "username", "role").from(`${process.env.USERS_TABLE}`);
   }
+  
+  static async getUsersByRole(userROle: string) {
+    return await db.select("email", "username", "role").from(`${process.env.USERS_TABLE}`).whereNot({ role: userROle });
+  }
 }

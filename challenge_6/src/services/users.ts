@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import DefaultResponse from "../models/dto/response";
 import UserRequest from "../models/dto/user";
 import UserRepository from "../repositories/users";
@@ -7,18 +7,23 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import User from "../models/entity/user";
 import cloudinary from "../../config/cloudinary";
+import CarRepository from "../repositories/cars";
 dotenv.config();
 
 export default class UsersService {
   static async register(res: Response,payload: UserRequest, image: any, typeImage: any) {
     try {
-      if(!payload.email || !payload.username || !payload.password) {  
+      if(!payload.email || !payload.username || !payload.password || !image) {  
         throw new Error(`${
           !payload.email ? "email" : 
           !payload.username ? "username" : 
-          !payload.password ? "password" : null} is required!`);
+          !payload.password ? "password" :
+          !image ? "image" : null} is required!`);
       }
 
+      if(!payload.email.includes("@")) {
+        throw new Error("Not email format!");
+      }
       
       if(payload.password.length < 8) {
         throw new Error("Password length should be more than 8 characters");
@@ -68,7 +73,7 @@ export default class UsersService {
         username: payload.username,
         password: hashPassword,
         image_url: imageUrl.secure_url,
-        role: payload.role ? payload.role : "user",
+        role: payload.role ? payload.role : "member",
       }
 
       await UserRepository.createUser(newUser);
@@ -82,41 +87,27 @@ export default class UsersService {
   static async login(res: Response, payload: UserRequest) {
     try {
       if(!payload.username || !payload.password) {
-        const response: DefaultResponse = {
-          status: {
-            code: 400,
-            response: "fail",
-            message: `${
-              !payload.username ? "username" : 
-              !payload.password ? "password" : null} is required!`},
-          }
-          throw response;
+        throw ({
+          message: `${
+            !payload.username ? "username" : 
+            !payload.password ? "password" : null} is required!}`
+        })
         }
       
       const getUsername = await UserRepository.getUserByUsername(payload.username);
         
       if(!getUsername) {
-        const response: DefaultResponse = {
-          status: {
-            code: 400,
-            response: "fail",
-            message: "Username does not exist!",
-          }
-        }
-        throw response;
+        throw ({
+          message: "Username does not exist!"
+        })
       };
 
       const isPasswordCorret = await bcrypt.compare(payload.password, getUsername.password);
 
       if(!isPasswordCorret) {
-        const response: DefaultResponse = {
-          status: {
-            code: 400,
-            response: "fail",
-            message: "Wrong password!",
-          }
-        }
-        throw response;
+       throw ({
+        message: "Wrong password!"
+       })
       };
 
       if (!process.env.SECRET_KEY) {
@@ -127,7 +118,7 @@ export default class UsersService {
             message: "Secret key is not defined in the environment variables!",
           }
         }
-        throw response;
+        return res.status(500).json(response);
       }
 
       const token = jwt.sign({ user: payload.username, role: getUsername.role }, process.env.SECRET_KEY, { expiresIn: "1h"});
@@ -136,7 +127,7 @@ export default class UsersService {
         status: {
           code: 200,
           response: "success",
-          message: "User successfully login",
+          message: `${getUsername.username} successfully login`,
         },
         result: {
           token: token,
@@ -148,16 +139,16 @@ export default class UsersService {
         maxAge: 60 * 60 * 1000,
       });
 
-      return res.status(response.status.code).json(response);
+      return res.status(200).json(response);
     } catch (error: any) {
       const response: DefaultResponse = {
         status: {
-          code: error.status.code ? error.status.code : 500,
-          response: error.status.response ? error.status.response : "error",
-          message: error.status.message ? error.status.message : "Internal server error",
+          code: 400,
+          response: "fail",
+          message: error.message,
         }
       }
-      return res.status(error.status.code ? error.status.code : 500).json(response);
+      return res.status(400).json(response);
     }
   }
 
@@ -195,19 +186,34 @@ export default class UsersService {
     }
   }
 
-  static async listUser(res: Response) {
+  static async currentUser(currentUser: string) {
     try {
-      let getUser: User[] = await UserRepository.getUsers();
-      return getUser;
-    } catch (error: any) {
-      const response: DefaultResponse = {
-        status: {
-          code: error.status.code ? error.status.code : 500,
-          response: error.status.response ? error.status.response : "error",
-          message: error.status.message ? error.status.message : "Internal server error",
-        }
+      const isUser = await UserRepository.getUserByUsername(currentUser);
+      const getCar = await CarRepository.getCarByUsername(currentUser);
+      if(!isUser) {
+        throw ({
+          message: "User does not exist!"
+        })
       }
-      return res.status(error.status.code ? error.status.code : 500).json(response);
+      return {
+        user: isUser,
+        cars: getCar
+      };
+    } catch (error: any) {
+      throw error.message
+    }
+  }
+
+  static async listUser(role?: string) {
+    let getUsers: User[];
+    try {
+      getUsers = await UserRepository.getUsers();
+      if(role === "admin") {
+        getUsers = await UserRepository.getUsersByRole("superadmin");
+      }
+      return getUsers;
+    } catch (error) {
+      throw error
     }
   }
 }

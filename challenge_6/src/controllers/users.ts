@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import UsersService from "../services/users";
 import db from "../../config/knex";
 import CarsService from "../services/cars";
-import UserRepository from "../repositories/users";
 dotenv.config();
 
 export default class Users {
@@ -40,18 +39,17 @@ export default class Users {
   static async login(req: Request, res: Response) {
     const payload: UserRequest = req.body;
     try {
-      await db.raw("SELECT 1");
       await UsersService.login(res, payload);
     } catch (error) {
       console.log("error => ", error)
       const response: DefaultResponse = {
         status: {
-          code: 500,
+          code: 400,
           response: "error",
           message: `${error}`,
         },
       };  
-      res.status(500).json(response);
+      res.status(400).json(response);
     }
   }
 
@@ -71,12 +69,39 @@ export default class Users {
     }
   }
 
+  static async currentUser(req: Request, res: Response) {
+    try {
+      const data = await UsersService.currentUser(req.user);
+      const response: DefaultResponse = {
+        status: {
+          code: 200,
+          response: "success",
+          message: "Data successfully retrieved",
+        },
+        result: {
+          user: data.user,
+          cars: data.cars
+        }
+      }
+      res.status(200).json(response);
+    } catch (error) {
+      const response: DefaultResponse = {
+        status: {
+          code: 400,
+          response: "fail",
+          message: `${error}`,
+        },
+      };  
+      res.status(400).json(response);
+    }
+  }
+
   static async getAll(req: Request, res: Response) {
     const size = req.query.size as string;
+    const getRole = req.role as string;
     try {
-      await db.raw("SELECT 1");
-      const getCar = await CarsService.listCar(res, size);
-      const getUser = await UsersService.listUser(res);
+      const getUsers = await UsersService.listUser(getRole);
+      const getCar = await CarsService.listCar(size);
       const response: DefaultResponse = {
         status: {
           code: 200,
@@ -84,26 +109,26 @@ export default class Users {
           message: "Data successfully retrieved"
         },
         result: {
-          listUser: getUser,
-          listCar: getCar,
+          users: getUsers,
+          cars: getCar,
         }
       };
   
-      res.status(response.status.code).json(response);
+      res.status(200).json(response);
     } catch (error) {
       const response: DefaultResponse = {
         status: {
-          code: 500,
-          response: "error",
+          code: 400,
+          response: "fail",
           message: `${error}`,
         },
       };
-      res.status(500).json(response);
+      res.status(400).json(response);
     }
   }
 
   static async listUser(req: Request, res: Response) {
-    const getUser = await UsersService.listUser(res);
+    const getUser = await UsersService.listUser();
     const response: DefaultResponse = {
       status: {
         code: 200,
@@ -116,18 +141,4 @@ export default class Users {
     res.status(response.status.code).json(response);
   }
 
-  static async getCarsByUser(req: Request, res: Response) {
-    const userPayload: string = req.params.user;
-    try {
-      const getUser = await UserRepository.getUserByUsername(userPayload);
-      if(getUser) {
-
-        console.log(getUser);
-      } else {
-        console.log('gada');
-      }
-    } catch (error) {
-      
-    }
-  }
 }

@@ -1,23 +1,23 @@
-import { Errback, Response } from "express";
-import CarRequest from "../models/dto/car";
+import { Response } from "express";
+import { CarRequest, saveUpdate } from "../models/dto/car";
 import DefaultResponse from "../models/dto/response";
 import Car from "../models/entity/car";
 import CarRepository from "../repositories/cars";
 import cloudinary from "../../config/cloudinary";
 
 export default class CarsService {
-  static async listCar(res: Response, size: string) {
+  static async listCar(size: string) {
     try {
       let getCar: Car[] = await CarRepository.getAllCars();
 
     getCar.sort((a, b) => {
-      const dateA = new Date(a.update).getTime();
-      const dateB = new Date(b.update).getTime();
+      const dateA = new Date(a.updated_at).getTime();
+      const dateB = new Date(b.updated_at).getTime();
       return dateB - dateA;
     });
 
     const convertUpdate = getCar?.map((car) => {
-      const getDate = new Date(car.update);
+      const getDate = new Date(car.updated_at);
       const monthName = getDate.toLocaleString("id-ID", { month: "long" });
       const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
         "id-ID",
@@ -28,8 +28,10 @@ export default class CarsService {
         image: car.image,
         name: car.name,
         rent: car.rent,
-        update: getTime,
         size: car.size,
+        added_by: car.added_by,
+        updated_by: car.updated_by,
+        updated_at: getTime,
       };
     });
 
@@ -41,115 +43,111 @@ export default class CarsService {
 
     return getCar
     } catch (error: any) {
-      const response: DefaultResponse = {
-        status: {
-          code: error.status.code ? error.status.code : 500,
-          response: error.status.response ? error.status.response : "error",
-          message: error.status.message ? error.status.message : "Internal server error",
-        }
-      }
-      return res.status(error.status.code ? error.status.code : 500).json(response);
+      throw error.message;
     }
   }
 
-  static async createCar(res: Response, payload: CarRequest, image: any, typeImage: any) {
+  static async createCar(payload: CarRequest, image: any, typeImage: any, getUser: string, getRole: string) {
     try {
-    if (!payload.name || !payload.rent || !payload.size || !image) {
-      throw new Error(`${
-        !payload.name
-            ? "name"
-            : !payload.rent
-            ? "rent"
-            : !payload.size
-            ? "size"
-            : !image
-            ? "image"
-            : null
-        } is required!`);
-    }
-    if (
-    typeImage != "image/png" &&
-    typeImage != "image/jpg" &&
-    typeImage != "image/jpeg"
-    ) {
-    throw new Error("It's not image format!");
-    }
-    const imageUrl = await cloudinary.uploader.upload(
-    image,
-    { folder: "dump" },
-    function (err: any, result: any) {
-      if (err) {
-        throw new Error("Failed to upload image to cloudinary");
+      if (!payload.name || !payload.rent || !payload.size || !image) {
+        throw ({
+          message: `${
+            !payload.name
+                ? "name"
+                : !payload.rent
+                ? "rent"
+                : !payload.size
+                ? "size"
+                : !image
+                ? "image"
+                : null
+            } is required!`
+        });
       }
-      return result;
-    }
-    );
-
-    const newCar: CarRequest = {
-      name: payload.name.toLowerCase(),
-      rent: payload.rent,
-      size: payload.size.toLocaleLowerCase(),
-      image_url: imageUrl.secure_url,
-      update: new Date().toISOString(),
-    }
-
-    await CarRepository.createCar(newCar);
-
-    return newCar;
-    } catch (error) {
-    const response: DefaultResponse = {
-      status: {
-        code: 400,
-        response: "fail",
-        message: `${error}`,
+      if (
+      typeImage != "image/png" &&
+      typeImage != "image/jpg" &&
+      typeImage != "image/jpeg"
+      ) {
+      throw ({
+        message: "It's not image format!"
+      });
       }
-    }
-    return res.status(400).json(response);
+      const imageUrl = await cloudinary.uploader.upload(
+      image,
+      { folder: "dump" },
+      function (err: any, result: any) {
+        if (err) {
+          throw ({
+            message: "Failed to upload image to cloudinary"
+          });
+        }
+        return result;
+      }
+      );
+
+      const newCar: CarRequest = {
+        name: payload.name.toLowerCase(),
+        rent: payload.rent,
+        size: payload.size.toLocaleLowerCase(),
+        image_url: imageUrl.secure_url,
+        added_by: getUser,
+        created_by: getRole,
+        updated_by: getRole,
+      }
+
+      await CarRepository.createCar(newCar);
+
+      return newCar;
+    } catch (error: any) {
+      throw error.message;
     }
   }
 
-  static async getCarById(res: Response, carId: number) {
+  static async getCarById(carId: number) {
     const getCar = await CarRepository.getCarById(carId);
-
     try {
       if (!getCar) {
-        const response: DefaultResponse = {
-          status: {
-            code: 404,
-            response: "fail",
-            message: "Car not found",
-          },
-        };  
-        throw response;
+        throw ({
+          message: "Car not found"
+        })
       }
-
       return getCar;
     } catch (error: any) {
-      const response: DefaultResponse = {
-        status: {
-          code: error.status.code ? error.status.code : 500,
-          response: error.status.response ? error.status.response : "error",
-          message: error.status.message ? error.status.message : "Internal server error",
-        }
-      }
-      return res.status(error.status.code ? error.status.code : 500).json(response);
+      throw error.message
     }
-    
   }
 
-  static async deleteCar(res: Response, carId: number) {
+  static async deleteCar(carId: number, getUser: string, getRole: string) {
+    const deleted_by = getUser as string;
     try {
-      const deleteCar = await CarRepository.deleteCar(carId);
+
+      const getCar = await CarRepository.getCarById(carId);
+    
+      if (getCar.added_by === "superadmin" && getRole !== "superadmin") {
+        throw ({
+          message: "delete denied for non-super admin user!"
+        })
+      }
+
+      if(getUser !== getCar.added_by && getUser !== "superadmin") {
+        throw ({
+          message: "update denied for not your data!"
+        })
+      }
+
+      const updateCar: CarRequest = {
+        deleted_by: deleted_by,
+        is_deleted: true,
+        deleted_at: new Date().toISOString()
+      }
+
+      const deleteCar = await CarRepository.updateCar(carId, updateCar);
 
       if (deleteCar === 0) {
-        const response: DefaultResponse = {
-          status: {
-            code: 404,
-            response: "fail",
-            message: "Car not found",
-          },
-        };  
-        throw response;
+        throw ({
+          message: "Car not found!"
+        });
       }
 
       const response: DefaultResponse = {
@@ -162,33 +160,30 @@ export default class CarsService {
 
       return response;
       } catch (error: any) {
-        const response: DefaultResponse = {
-          status: {
-            code: error.status.code ? error.status.code : 500,
-            response: error.status.response ? error.status.response : "error",
-            message: error.status.message ? error.status.message : "Internal server error",
-          }
-        }
-        return res.status(error.status.code ? error.status.code : 500).json(response);
+        throw error.message;
       }
   }
 
-  static async updateCar(res: Response, payload: CarRequest, carId: number, image: any, typeImage?: any) {
-
+  static async updateCar(res: Response, payload: CarRequest, carId: number, image: any, typeImage?: any, getUser?: string, getRole?: string) {
   let carUpdate: CarRequest;
-
   try {
     const getCar = await CarRepository.getCarById(carId);
-
     if(!getCar) {
-      const response: DefaultResponse = {
-        status: {
-          code: 404,
-          response: "fail",
-          message: "Car not found!",
-        },
-      };  
-      throw response;
+      throw ({
+        message: "Car not found!"
+      })
+    }
+
+    if(getCar.created_by === "superadmin" && getRole !== "superadmin") {
+      throw ({
+        message: "update denied for non-super admin user!"
+      })
+    }
+
+    if(getUser !== getCar.added_by && getUser !== "superadmin") {
+      throw ({
+        message: "update denied for not your data!"
+      })
     }
 
     if (image) {
@@ -197,14 +192,9 @@ export default class CarsService {
         typeImage != "image/jpg" &&
         typeImage != "image/jpeg"
         ) {
-        const response: DefaultResponse = {
-          status: {
-            code: 400,
-            response: "fail",
-            message: "It's not image format!",
-          },
-        };  
-        throw response;
+        throw ({
+          message: "It's not image format!"
+        });
         }
       const result = await cloudinary.uploader.upload(
         image,
@@ -218,41 +208,32 @@ export default class CarsService {
                 message: "Failed to upload image to cloudinary",
               },
             };  
-            throw response;
+            return res.status(500).json(response);
           }
           return result;
         }
       );
       const imageUrl = result.secure_url;
-      carUpdate = await CarsService.saveUpdate(payload, imageUrl, carId);
+      carUpdate = await CarsService.saveUpdate({payload, imageUrl, carId, getRole});
     } else {
-      carUpdate = await CarsService.saveUpdate(payload, undefined, carId);
+      carUpdate = await CarsService.saveUpdate({payload, carId, getRole});
     }
 
     return carUpdate;
-  } catch (error: any) {
-    const response: DefaultResponse = {
-      status: {
-        code: error.status.code ? error.status.code : 500,
-        response: error.status.response ? error.status.response : "error",
-        message: error.status.message ? error.status.message : "Internal server error",
-      }
+    } catch (error: any) {
+      throw error.message;
     }
-    return res.status(error.status.code ? error.status.code : 500).json(response);
-  }
   }
 
-  static async saveUpdate(
-    payload: CarRequest,
-    imageUrl?: string,
-    carId?: number
-  ) {
+  static async saveUpdate(options: saveUpdate) {
+    const { payload, imageUrl, carId, getRole } = options;
     const updateCar: CarRequest = {
       name: payload.name,
       rent: payload.rent,
       size: payload.size?.toLowerCase(),
       image_url: imageUrl,
-      update: new Date().toISOString()
+      updated_by: getRole as string,
+      updated_at: new Date().toISOString()
     }
   
     await CarRepository.updateCar(carId, updateCar);

@@ -8,24 +8,35 @@ import swaggerJSDocs from "swagger-jsdoc";
 import swaggerUiExpress from "swagger-ui-express";
 const router = express.Router();
 
-// For Login / Logout
-router.post("/v1/register", handleImage, Users.register);
-router.post("/v1/login", Users.login);
-router.delete("/v1/logout", Users.logout);
+// For Super Admin
+router.post("/v1/superadmin/login", Users.login);
+router.post("/v1/superadmin/register", UserMiddleware.verifyToken, UserMiddleware.isSuperAdmin, handleImage, Users.register);
+router.delete("/v1/superadmin/logout", UserMiddleware.verifyToken, Users.logout);
 
-// For Admin
-router.get("/v1/admin", UserMiddleware.verifyToken, UserMiddleware.isAdmin, Users.getAll);
-router.get("/v1/users", UserMiddleware.verifyToken, UserMiddleware.isAdmin, Users.listUser);
+// For Register
+router.post("/v1/user/register", handleImage, Users.register);
 
-// For User
-router.get("/v1/cars", UserMiddleware.verifyToken, Cars.listCar);
-router.post("/v1/cars", handleImage, Cars.createCar);
+// For Super Admin to perform CRUD operations
+router.get("/v1/superadmin/cars", UserMiddleware.verifyToken, UserMiddleware.isSuperAdmin, Users.getAll);
+router.post("/v1/superadmin/cars", UserMiddleware.verifyToken, UserMiddleware.isSuperAdmin, handleImage, Cars.createCar);
+router.patch("/v1/superadmin/cars/:id", UserMiddleware.verifyToken, UserMiddleware.isSuperAdmin, handleImage, Cars.updateCar);
+router.delete("/v1/superadmin/cars/:id", UserMiddleware.verifyToken, UserMiddleware.isSuperAdmin, Cars.deleteCar);
+
+// For Admin to perform CRUD operations
+router.get("/v1/admin/cars", UserMiddleware.verifyToken, UserMiddleware.isAdmin, Users.getAll);
+router.post("/v1/admin/cars", UserMiddleware.verifyToken, UserMiddleware.isAdmin, handleImage, Cars.createCar);
+router.patch("/v1/admin/cars/:id", UserMiddleware.verifyToken, UserMiddleware.isAdmin, handleImage, Cars.updateCar);
+router.delete("/v1/admin/cars/:id", UserMiddleware.verifyToken, UserMiddleware.isAdmin, Cars.deleteCar);
+
+// For Current User
+router.get("/v1/user/current", UserMiddleware.verifyToken, Users.currentUser);
+
+// For Member
+router.get("/v1/user/cars", UserMiddleware.verifyToken, Cars.listCar);
+
+// For Anyone
+router.get("/v1/cars", Cars.listCar);
 router.get("/v1/cars/:id", Cars.getCarById);
-router.delete("/v1/cars/:id", Cars.deleteCar);
-router.patch("/v1/cars/:id", handleImage, Cars.updateCar);
-
-// For Get Car of User
-router.get("/v1/:user/cars", Users.getCarsByUser);
 
 // Open API Documentation
 const swaggerSpec: swaggerJSDocs.Options = swaggerJSDocs(swaggerOptions);

@@ -1,9 +1,11 @@
 import { v2 as cloudinary } from "cloudinary";
+import dotenv from "dotenv";
+dotenv.config();
 
 cloudinary.config({
-    cloud_name: 'dhtfq9yw8',
-    api_key: '445173724765242',
-    api_secret: 'RDCd6J7eKHfqNGPxcoIMSjGBwRo',
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,
     secure: true
 });
 
