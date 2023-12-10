@@ -36,35 +36,35 @@ function TestimonialLanding() {
             onSwiper={(swipper) => setSwiperRef(swipper)}
           >
           <SwiperSlide className='border bg-indigo-100 shadow-lg flex items-center gap-16 px-20 rounded'>
-            <Img src={sliderPhoto1} alt='people-picture' classname='rounded-full flex-initial w-28'/>
+            <Img src={sliderPhoto1} alt='people-picture' className='rounded-full flex-initial w-28'/>
             <div className="flex flex-col gap-3">
               <Stars/>
               <Text text='“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod”'/>
-              <Title title='John Dee 32, Bromo' classname='font-semibold'/>
+              <Title title='John Dee 32, Bromo' className='font-semibold'/>
             </div>
           </SwiperSlide>
           <SwiperSlide className='border bg-indigo-100  shadow-lg flex items-center gap-16 px-20 rounded'>
-            <Img src={sliderPhoto2} alt='people-picture' classname='rounded-full flex-initial w-28'/>
+            <Img src={sliderPhoto2} alt='people-picture' className='rounded-full flex-initial w-28'/>
             <div className="flex flex-col gap-3">
               <Stars/>
               <Text text='“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod”'/>
-              <Title title='John Dee 32, Bromo' classname='font-semibold'/>
+              <Title title='John Dee 32, Bromo' className='font-semibold'/>
             </div>
           </SwiperSlide>
           <SwiperSlide className='border bg-indigo-100  shadow-lg flex items-center gap-16 px-20 rounded'>
-            <Img src={sliderPhoto1} alt='people-picture' classname='rounded-full flex-initial w-28'/>
+            <Img src={sliderPhoto1} alt='people-picture' className='rounded-full flex-initial w-28'/>
             <div className="flex flex-col gap-3">
               <Stars/>
               <Text text='“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod”'/>
-              <Title title='John Dee 32, Bromo' classname='font-semibold'/>
+              <Title title='John Dee 32, Bromo' className='font-semibold'/>
             </div>
           </SwiperSlide>
           <SwiperSlide className='border bg-indigo-100  shadow-lg flex items-center gap-16 px-20 rounded'>
-            <Img src={sliderPhoto2} alt='people-picture' classname='rounded-full flex-initial w-28'/>
+            <Img src={sliderPhoto2} alt='people-picture' className='rounded-full flex-initial w-28'/>
             <div className="flex flex-col gap-3">
               <Stars/>
               <Text text='“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod”'/>
-              <Title title='John Dee 32, Bromo' classname='font-semibold'/>
+              <Title title='John Dee 32, Bromo' className='font-semibold'/>
             </div>
           </SwiperSlide>
         </Swiper>

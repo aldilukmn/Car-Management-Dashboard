@@ -1,6 +1,4 @@
-========FRONT-END========
-
-# Dashboard
+# Profil Page
 
 ![Dashboard](result_img/profile-page.png)
 
