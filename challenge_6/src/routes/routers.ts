@@ -8,6 +8,9 @@ import swaggerJSDocs from "swagger-jsdoc";
 import swaggerUiExpress from "swagger-ui-express";
 const router = express.Router();
 
+// Login Google
+router.get("/v1/auth/login/google", Users.loginGoogle);
+
 // For Super Admin
 router.post("/v1/superadmin/login", Users.login);
 router.post("/v1/superadmin/register", UserMiddleware.verifyToken, UserMiddleware.isSuperAdmin, handleImage, Users.register);

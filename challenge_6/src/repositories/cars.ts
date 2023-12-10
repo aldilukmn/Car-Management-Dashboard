@@ -4,8 +4,26 @@ import { CarRequest } from "../models/dto/car";
 dotenv.config()
 
 export default class CarRepository {
-  static async getAllCars() {
-    return await db.select("*").where({is_deleted: false}).from(`${process.env.CARS_TABLE}`);
+  static async getAllCars(getOffSet: number, perPage: number) {
+    const cars = await db.select("*").where({is_deleted: false}).limit(perPage).offset(getOffSet).from(`${process.env.CARS_TABLE}`);
+
+    const totalData = await db(`${process.env.CARS_TABLE}`).count().where({is_deleted: false}).first();
+
+    return {
+      cars: cars,
+      total: Number(totalData?.count)
+    }
+  }
+
+  static async getCarByAddedBy(getOffSet: number, perPage: number, user?: string) {
+    const cars = await db.select("*").where({  added_by: user, is_deleted: false}).limit(perPage).offset(getOffSet).from(`${process.env.CARS_TABLE}`);
+
+    const totalData = await db(`${process.env.CARS_TABLE}`).count().where({  added_by: user, is_deleted: false}).first(); 
+
+    return {
+      cars: cars,
+      total: Number(totalData?.count),
+    }
   }
 
   static async getCarById(carId: number) {

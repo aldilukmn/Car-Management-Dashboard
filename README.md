@@ -2,7 +2,7 @@
 
 # Dashboard
 
-![Dashboard](result_img/dashboard.png)
+![Dashboard](result_img/profile-page.png)
 
 # List Car
 
@@ -19,15 +19,3 @@
 # Delete Car
 
 ![Delete Car](result_img/delete-alert-car.png)
-
-========BACK-END========
-
-=> LIST CAR || GET || http://localhost:8085/v1/cars
-
-=> CREATE CAR || POST || http://localhost:8085/v1/cars
-
-=> GET CAR || GET || http://localhost:8085/v1/cars/:id
-
-=> UPDATE CAR || PATCH || http://localhost:8085/v1/cars/:id
-
-=> DELETE CAR || DELETE || http://localhost:8085/v1/cars/:id

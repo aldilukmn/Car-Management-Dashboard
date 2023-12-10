@@ -3,7 +3,6 @@ import UserRequest from "../models/dto/user";
 import DefaultResponse from "../models/dto/response";
 import dotenv from "dotenv";
 import UsersService from "../services/users";
-import db from "../../config/knex";
 import CarsService from "../services/cars";
 dotenv.config();
 
@@ -13,7 +12,6 @@ export default class Users {
     const image: any = req.file?.path;
     const typeImage: any = req.file?.mimetype;
     try {
-      await db.raw("SELECT 1");
       const newUser = await UsersService.register(res, payload, image, typeImage);
       const response: DefaultResponse = {
         status: {
@@ -39,13 +37,13 @@ export default class Users {
   static async login(req: Request, res: Response) {
     const payload: UserRequest = req.body;
     try {
-      await UsersService.login(res, payload);
+      const response = await UsersService.login(res, payload);
+      res.status(200).json(response);
     } catch (error) {
-      console.log("error => ", error)
       const response: DefaultResponse = {
         status: {
           code: 400,
-          response: "error",
+          response: "fail",
           message: `${error}`,
         },
       };  
@@ -55,17 +53,16 @@ export default class Users {
 
   static async logout(req: Request, res: Response) {
     try {
-      await db.raw("SELECT 1");
-      await UsersService.logout(req, res);
+      await UsersService.logout(res);
     } catch (error) {
       const response: DefaultResponse = {
         status: {
-          code: 500,
-          response: "error",
+          code: 400,
+          response: "fail",
           message: `${error}`,
         },
       };  
-      res.status(500).json(response);
+      res.status(400).json(response);
     }
   }
 
@@ -99,9 +96,13 @@ export default class Users {
   static async getAll(req: Request, res: Response) {
     const size = req.query.size as string;
     const getRole = req.role as string;
+    const getUser = req.user;
+    const searchCar = req.query.search as string;
+    const currentPage = req.query.page as string;
+    const perPage = req.query.perPage as string;
     try {
       const getUsers = await UsersService.listUser(getRole);
-      const getCar = await CarsService.listCar(size);
+      const getCar = await CarsService.listCar(size, getUser, searchCar, currentPage, perPage);
       const response: DefaultResponse = {
         status: {
           code: 200,
@@ -110,10 +111,12 @@ export default class Users {
         },
         result: {
           users: getUsers,
-          cars: getCar,
+          cars: getCar.getCar,
+          total_data_car: getCar.totalDataCar,
+          current_page: getCar.currentPageNumber,
+          per_page: getCar.perPageNumber,
         }
       };
-  
       res.status(200).json(response);
     } catch (error) {
       const response: DefaultResponse = {
@@ -127,17 +130,20 @@ export default class Users {
     }
   }
 
-  static async listUser(req: Request, res: Response) {
-    const getUser = await UsersService.listUser();
-    const response: DefaultResponse = {
-      status: {
-        code: 200,
-        response: "success",
-        message: "Data successfully retrieved"
-      },
-      result: getUser
-    };
-
-    res.status(response.status.code).json(response);
+  static async loginGoogle(req: Request, res: Response) {
+    const payload = req.query.access_token as string;
+    try {
+      const response = await UsersService.loginGoogle(payload);
+      res.status(200).json(response);
+    } catch (error) {
+      const response: DefaultResponse = {
+        status: {
+          code: 400,
+          response: "fail",
+          message: `${error}`,
+        },
+      };  
+      res.status(400).json(response);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Response } from "express";
 import DefaultResponse from "../models/dto/response";
 import UserRequest from "../models/dto/user";
 import UserRepository from "../repositories/users";
@@ -8,17 +8,17 @@ import dotenv from "dotenv";
 import User from "../models/entity/user";
 import cloudinary from "../../config/cloudinary";
 import CarRepository from "../repositories/cars";
+import { OAuth2Client } from "google-auth-library";
 dotenv.config();
 
 export default class UsersService {
   static async register(res: Response,payload: UserRequest, image: any, typeImage: any) {
     try {
-      if(!payload.email || !payload.username || !payload.password || !image) {  
+      if(!payload.email || !payload.username || !payload.password) {  
         throw new Error(`${
           !payload.email ? "email" : 
           !payload.username ? "username" : 
-          !payload.password ? "password" :
-          !image ? "image" : null} is required!`);
+          !payload.password ? "password" : null} is required!`);
       }
 
       if(!payload.email.includes("@")) {
@@ -26,44 +26,35 @@ export default class UsersService {
       }
       
       if(payload.password.length < 8) {
-        throw new Error("Password length should be more than 8 characters");
+        throw new Error("Password length should be more than 8 characters!");
       }
 
-      if (
-        typeImage != "image/png" &&
-        typeImage != "image/jpg" &&
-        typeImage != "image/jpeg"
-        ) {
-        throw new Error("It's not image format!");
-        }
+      // if (
+      //   typeImage != "image/png" &&
+      //   typeImage != "image/jpg" &&
+      //   typeImage != "image/jpeg"
+      //   ) {
+      //   throw new Error("It's not image format!");
+      //   }
 
       const getUserEmail = await UserRepository.getUserByEmail(payload.email);
 
       const getUserName = await UserRepository.getUserByUsername(payload.username);
   
       if(getUserEmail || getUserName) {
-        throw ({
-          message: `${getUserEmail ? "Email" : "Username"} already exist!`
-        });
+        throw new Error (`${getUserEmail ? "Email" : "Username"} already exist!`);
       }
 
-      const imageUrl = await cloudinary.uploader.upload(
-        image,
-        { folder: "user" },
-        function (err: any, result: any) {
-          if (err) {
-            const response: DefaultResponse = {
-              status: {
-                code: 500,
-                response: "error",
-                message: "Failed to upload image to cloudinary",
-              },
-            };  
-            return res.status(500).json(response);
-          }
-          return result;
-        }
-        );
+      // const imageUrl = await cloudinary.uploader.upload(
+      //   image,
+      //   { folder: "user" },
+      //   function (err: any, result: any) {
+      //     if (err) {
+      //       throw new Error("Failed to upload image to cloudinary");
+      //     }
+      //     return result;
+      //   }
+      // );
   
       const salt = await bcrypt.genSalt();
       const hashPassword = await bcrypt.hash(payload.password, salt);
@@ -72,8 +63,8 @@ export default class UsersService {
         email: payload.email,
         username: payload.username,
         password: hashPassword,
-        image_url: imageUrl.secure_url,
-        role: payload.role ? payload.role : "member",
+        // image_url: imageUrl.secure_url,
+        role: payload.role ? payload.role : "admin",
       }
 
       await UserRepository.createUser(newUser);
@@ -87,27 +78,21 @@ export default class UsersService {
   static async login(res: Response, payload: UserRequest) {
     try {
       if(!payload.username || !payload.password) {
-        throw ({
-          message: `${
-            !payload.username ? "username" : 
-            !payload.password ? "password" : null}  is required!`
-        })
+        throw new Error (`${
+          !payload.username ? "username" : 
+          !payload.password ? "password" : null}  is required!`)
         }
       
       const getUsername = await UserRepository.getUserByUsername(payload.username);
         
       if(!getUsername) {
-        throw ({
-          message: "Username does not exist!"
-        })
+        throw new Error ("Username does not exist!")
       };
 
       const isPasswordCorret = await bcrypt.compare(payload.password, getUsername.password);
 
       if(!isPasswordCorret) {
-       throw ({
-        message: "Wrong password!"
-       })
+       throw new Error ("Wrong password!");
       };
 
       if (!process.env.SECRET_KEY) {
@@ -134,37 +119,19 @@ export default class UsersService {
         }
       };
 
-      res.cookie("Token", `Bearer ${token}`, {
-        httpOnly: true,
-        maxAge: 60 * 60 * 1000,
-      });
+      // res.cookie("Token", `Bearer ${token}`, {
+      //   httpOnly: true,
+      //   maxAge: 60 * 60 * 1000,
+      // });
 
-      return res.status(200).json(response);
+      return response;
     } catch (error: any) {
-      const response: DefaultResponse = {
-        status: {
-          code: 400,
-          response: "fail",
-          message: error.message,
-        }
-      }
-      return res.status(400).json(response);
+      throw error.message;
     }
   }
 
-  static async logout(req: Request, res: Response) {
-    const token = req.cookies.Token;
+  static async logout(res: Response) {
     try {
-      if (!token) {
-        const response: DefaultResponse = {
-          status: {
-            code: 401,
-            response: "fail",
-            message: "Please login first!",
-          }
-        }
-        throw response;
-      }
       res.clearCookie("Token");
       const response: DefaultResponse = {
         status: {
@@ -173,16 +140,9 @@ export default class UsersService {
           message: "User successfully logout",
         }
       }
-      res.status(response.status.code).json(response);
-    } catch (error: any) {
-      const response: DefaultResponse = {
-        status: {
-          code: error.status.code ? error.status.code : 500,
-          response: error.status.response ? error.status.response : "error",
-          message: error.status.message ? error.status.message : "Internal server error",
-        }
-      }
-      return res.status(error.status.code ? error.status.code : 500).json(response);
+      res.status(200).json(response);
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -191,9 +151,7 @@ export default class UsersService {
       const isUser = await UserRepository.getUserByUsername(currentUser);
       const getCar = await CarRepository.getCarByUsername(currentUser);
       if(!isUser) {
-        throw ({
-          message: "User does not exist!"
-        })
+        throw new Error ("User does not exist!")
       }
       return {
         user: isUser,
@@ -214,6 +172,65 @@ export default class UsersService {
       return getUsers;
     } catch (error) {
       throw error
+    }
+  }
+
+  static async loginGoogle(payload: string) {
+    try {
+      const client = new OAuth2Client(process.env.CLIENT_ID);
+      const userInfo = await client.verifyIdToken({
+        idToken: payload,
+        audience: process.env.CLIENT_ID
+      });
+
+      const getUser = userInfo.getPayload();
+
+      if(!getUser) {
+        throw new Error("User not found!");
+      }
+
+      const getUserByEmail = await UserRepository.getUserByEmail(getUser.email as string);
+
+      if(getUserByEmail) {
+        const token = jwt.sign({ user: getUserByEmail.username, role: getUserByEmail.role }, process.env.SECRET_KEY || "default-secret-key", { expiresIn: "1h"});
+
+        const response: DefaultResponse = {
+          status: {
+            code: 200,
+            response: "success",
+            message: `${getUserByEmail.username} successfully login`,
+          },
+          result: {
+            token: token,
+          }
+        };
+        return response;
+      } else {
+        const token = jwt.sign({ user: getUser.given_name, role: "admin" }, process.env.SECRET_KEY || "default-secret-key", { expiresIn: "1h"});
+
+        const newUser: UserRequest = {
+          email: getUser.email,
+          username: getUser.given_name?.split(' ').join('').toLowerCase(),
+          image_url: getUser.picture,
+          role: "admin",
+        }
+
+        await UserRepository.createUser(newUser);
+
+        const response: DefaultResponse = {
+          status: {
+            code: 200,
+            response: "success",
+            message: `${newUser.username} successfully login`,
+          },
+          result: {
+            token: token,
+          }
+        };
+        return response;
+      }
+    } catch (error: any) {
+      throw error.message;
     }
   }
 }

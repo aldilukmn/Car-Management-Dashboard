@@ -5,6 +5,7 @@ export default interface Car {
     size: string,
     image_url: string,
     added_by: string,
+    created_by: string,
     updated_by: string,
     updated_at: string,
 }

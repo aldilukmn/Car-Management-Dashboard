@@ -2,14 +2,12 @@ import { Request, Response } from "express";
 import { CarRequest } from "../models/dto/car";
 import DefaultResponse from "../models/dto/response";
 import CarsService from "../services/cars";
-import db from "../../config/knex";
 
 export default class Cars {
   static async listCar(req: Request, res: Response) {
     const size = req.query.size as string;
     try {
       const getCar = await CarsService.listCar(size);
-      await db.raw("SELECT 1");
       const response: DefaultResponse = {
         status: {
           code: 200,
@@ -23,12 +21,12 @@ export default class Cars {
     } catch (error) {
       const response: DefaultResponse = {
         status: {
-          code: 500,
+          code: 400,
           response: "error",
           message: `${error}`,
         },
       };
-      res.status(500).json(response);
+      res.status(400).json(response);
     }
   }
 
@@ -77,7 +75,7 @@ export default class Cars {
     } catch (error) {
       const response: DefaultResponse = {
         status: {
-          code: 400,
+          code: 404,
           response: "fail",
           message: `${error}`,
         },

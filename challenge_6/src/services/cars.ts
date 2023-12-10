@@ -6,9 +6,24 @@ import CarRepository from "../repositories/cars";
 import cloudinary from "../../config/cloudinary";
 
 export default class CarsService {
-  static async listCar(size: string) {
+  static async listCar(size?: string, user?: string, search?: string, currentPage?: string, perPage?: string) {
     try {
-      let getCar: Car[] = await CarRepository.getAllCars();
+      let getCar: Car[];
+      let totalDataCar: number;
+      const currentPageNumber = Number(currentPage) || 1 as number;
+      const perPageNumber = Number(perPage) || 4 as number;
+
+      const getOffSet: number = (currentPageNumber - 1) * perPageNumber;
+      
+      if(user === "superadmin") {
+        const getData = await CarRepository.getAllCars(getOffSet, perPageNumber);
+        getCar = getData.cars;
+        totalDataCar = getData.total
+      } else {
+        const getData = await CarRepository.getCarByAddedBy(getOffSet, perPageNumber, user);
+        getCar = getData.cars;
+        totalDataCar = getData.total;
+      }
 
       getCar.sort((a, b) => {
       const dateA = new Date(a.updated_at).getTime();
@@ -16,7 +31,7 @@ export default class CarsService {
       return dateB - dateA;
       });
 
-      const convertUpdate = getCar?.map((car) => {
+      const convertUpdate = getCar.map((car) => {
         const getDate = new Date(car.updated_at);
         const monthName = getDate.toLocaleString("id-ID", { month: "long" });
         const getTime = `${getDate.getDate()} ${monthName} ${getDate.getFullYear()}, ${getDate.toLocaleTimeString(
@@ -30,62 +45,70 @@ export default class CarsService {
           size: car.size,
           image_url: car.image_url,
           added_by: car.added_by,
+          created_by: car.created_by,
           updated_by: car.updated_by,
           updated_at: getTime,
         };
       });
 
-      if (size) {
+      if (search) {
+        const searchResults = convertUpdate.filter((car) =>
+        car.name.toLowerCase().includes(search.toLowerCase())
+        );
+        getCar = size
+        ? searchResults.filter((car) => car.size === size)
+        : searchResults;
+        totalDataCar = getCar.length;
+      } else if (size) {
         getCar = convertUpdate.filter((car) => car.size === size);
+        totalDataCar = getCar.length;
       } else {
         getCar = convertUpdate;
       }
 
-      return getCar
-      } catch (error: any) {
-        throw error.message;
+      return {
+        getCar,
+        totalDataCar,
+        perPageNumber,
+        currentPageNumber,
       }
+    } catch (error) {
+      throw error;
     }
+  }
 
   static async createCar(payload: CarRequest, image: any, typeImage: any, getUser: string, getRole: string) {
     try {
       if (!payload.name || !payload.rent || !payload.size || !image) {
-        throw ({
-          message: `${
-            !payload.name
-                ? "name"
-                : !payload.rent
-                ? "rent"
-                : !payload.size
-                ? "size"
-                : !image
-                ? "image"
-                : null
-            } is required!`
-        });
+        throw new Error(`${
+          !payload.name
+            ? "name"
+            : !payload.rent
+            ? "rent"
+            : !payload.size
+            ? "size"
+            : !image
+            ? "image"
+            : null
+          } is required!`);
       }
       if (
-      typeImage != "image/png" &&
-      typeImage != "image/jpg" &&
-      typeImage != "image/jpeg"
+        typeImage != "image/png" &&
+        typeImage != "image/jpg" &&
+        typeImage != "image/jpeg"
       ) {
-      throw ({
-        message: "It's not image format!"
-      });
+      throw new Error("It's not image format!");
       }
       const imageUrl = await cloudinary.uploader.upload(
       image,
       { folder: "dump" },
       function (err: any, result: any) {
         if (err) {
-          throw ({
-            message: "Failed to upload image to cloudinary"
-          });
+          throw new Error("Failed to upload image to cloudinary");
         }
         return result;
       }
       );
-
       const newCar: CarRequest = {
         name: payload.name.toLowerCase(),
         rent: payload.rent,
@@ -95,9 +118,7 @@ export default class CarsService {
         created_by: getRole,
         updated_by: getRole,
       }
-
       await CarRepository.createCar(newCar);
-
       return newCar;
     } catch (error: any) {
       throw error.message;
@@ -108,9 +129,7 @@ export default class CarsService {
     try {
       const getCar = await CarRepository.getCarById(carId);
       if (!getCar) {
-        throw ({
-          message: "Car not found"
-        })
+        throw new Error("Car not found");
       }
 
       const getDate = new Date(getCar.updated_at);
@@ -127,6 +146,7 @@ export default class CarsService {
         size: getCar.size,
         image_url: getCar.image_url,
         added_by: getCar.added_by,
+        created_by: getCar.created_by,
         updated_by: getCar.updated_by,
         updated_at: getTime,
       }
@@ -143,15 +163,11 @@ export default class CarsService {
       const getCar = await CarRepository.getCarById(carId);
     
       if (getCar.added_by === "superadmin" && getRole !== "superadmin") {
-        throw ({
-          message: "delete denied for non-super admin user!"
-        })
+        throw new Error ("delete denied for non-super admin user!")
       }
 
       if(getUser !== getCar.added_by && getUser !== "superadmin") {
-        throw ({
-          message: "update denied for not your data!"
-        })
+        throw new Error ("delete denied for not your data!")
       }
 
       const updateCar: CarRequest = {
@@ -163,9 +179,7 @@ export default class CarsService {
       const deleteCar = await CarRepository.updateCar(carId, updateCar);
 
       if (deleteCar === 0) {
-        throw ({
-          message: "Car not found!"
-        });
+        throw new Error ("Car not found!");
       }
 
       const response: DefaultResponse = {
@@ -187,21 +201,15 @@ export default class CarsService {
   try {
     const getCar = await CarRepository.getCarById(carId);
     if(!getCar) {
-      throw ({
-        message: "Car not found!"
-      })
+      throw new Error ("Car not found!");
     }
 
     if(getCar.created_by === "superadmin" && getRole !== "superadmin") {
-      throw ({
-        message: "update denied for non-super admin user!"
-      })
+      throw new Error ("update denied for non-super admin user!");
     }
 
     if(getUser !== getCar.added_by && getUser !== "superadmin") {
-      throw ({
-        message: "update denied for not your data!"
-      })
+      throw new Error ("update denied for not your data!")
     }
 
     if (image) {
@@ -210,27 +218,19 @@ export default class CarsService {
         typeImage != "image/jpg" &&
         typeImage != "image/jpeg"
         ) {
-        throw ({
-          message: "It's not image format!"
-        });
+        throw new Error ("It's not image format!");
         }
       const result = await cloudinary.uploader.upload(
         image,
         { folder: "dump" },
         async function (error: any, result: any) {
           if (error) {
-            const response: DefaultResponse = {
-              status: {
-                code: 500,
-                response: "fail",
-                message: "Failed to upload image to cloudinary",
-              },
-            };  
-            return res.status(500).json(response);
+            throw new Error("Failed to upload image to cloudinary");
           }
           return result;
         }
       );
+
       const imageUrl = result.secure_url;
       carUpdate = await CarsService.saveUpdate({payload, imageUrl, carId, getRole});
     } else {
