@@ -185,11 +185,7 @@ export default class UsersService {
 
       const getUser = userInfo.getPayload();
 
-      if(!getUser) {
-        throw new Error("User not found!");
-      }
-
-      const getUserByEmail = await UserRepository.getUserByEmail(getUser.email as string);
+      const getUserByEmail = await UserRepository.getUserByEmail(getUser?.email as string);
 
       if(getUserByEmail) {
         const token = jwt.sign({ user: getUserByEmail.username, role: getUserByEmail.role }, process.env.SECRET_KEY || "default-secret-key", { expiresIn: "1h"});
@@ -206,12 +202,12 @@ export default class UsersService {
         };
         return response;
       } else {
-        const token = jwt.sign({ user: getUser.given_name, role: "admin" }, process.env.SECRET_KEY || "default-secret-key", { expiresIn: "1h"});
+        const token = jwt.sign({ user: getUser?.given_name, role: "admin" }, process.env.SECRET_KEY || "default-secret-key", { expiresIn: "1h"});
 
         const newUser: UserRequest = {
-          email: getUser.email,
-          username: getUser.given_name?.split(' ').join('').toLowerCase(),
-          image_url: getUser.picture,
+          email: getUser?.email,
+          username: getUser?.given_name?.split(' ').join('').toLowerCase(),
+          image_url: getUser?.picture,
           role: "admin",
         }
 

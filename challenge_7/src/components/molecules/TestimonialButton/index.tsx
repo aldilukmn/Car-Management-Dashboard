@@ -11,8 +11,8 @@ function TestimonialButton({prevHandlerButton, nextHandlerButton}: TestimonialBu
   return (
     <>
       <div className="absolute bottom-16 w-full text-center">
-        <Button name={<Icon icon={<IoIosArrowBack/>} classname='border border-zinc-400 hover:text-white hover:border-green-600 hover:bg-green-600 p-2 rounded-full'/>} onclick={prevHandlerButton} className='me-3'/>
-        <Button name={<Icon icon={<IoIosArrowForward/>} classname='border border-zinc-400 hover:text-white hover:border-green-600 hover:bg-green-600 p-2 rounded-full'/>} onclick={nextHandlerButton} className='ms-3'/>
+        <Button name={<Icon icon={<IoIosArrowBack/>} classname='border border-zinc-400 hover:text-white hover:border-green-600 hover:bg-green-600 p-2 rounded-full'/>} onClick={prevHandlerButton} className='me-3'/>
+        <Button name={<Icon icon={<IoIosArrowForward/>} classname='border border-zinc-400 hover:text-white hover:border-green-600 hover:bg-green-600 p-2 rounded-full'/>} onClick={nextHandlerButton} className='ms-3'/>
       </div>
     </>
   )

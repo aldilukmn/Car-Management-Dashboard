@@ -155,9 +155,9 @@ function ListCar({sizeFilter}: { sizeFilter: string }) {
         </div>
         <Gap height={30}/>
         <div className="flex gap-5 justify-center items-center">
-          <Button name='Prev Page' className={`bg-blue-700 text-white py-1 px-2 rounded ${page <= 1 || Boolean(search) ? 'bg-blue-400' : ''}`} onClick={handlePrevPage} disabled={page <= 1 || Boolean(search)}/>
+          <Button name='Prev Page' className={`text-white py-1 px-2 rounded ${page <= 1 || Boolean(search) ? 'bg-blue-400' : 'bg-blue-700'}`} onClick={handlePrevPage} disabled={page <= 1 || Boolean(search)}/>
           <Text text={`${page <= totalPage ? page : totalPage} / ${totalPage}`} classname='font-semibold'/>
-          <Button name='Next Page' className={`bg-blue-700 text-white px-2 py-1 rounded ${page >= totalPage ? 'bg-blue-400' : ''}`} onClick={handleNextPage} disabled={page >= totalPage}/>
+          <Button name='Next Page' className={`text-white px-2 py-1 rounded ${page >= totalPage ? 'bg-blue-400' : 'bg-blue-700'}`} onClick={handleNextPage} disabled={page >= totalPage}/>
       </div>
       </div>
     </>
