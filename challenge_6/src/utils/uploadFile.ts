@@ -1,15 +1,15 @@
-import { Request } from 'express';
-import multer, { StorageEngine } from 'multer';
+import type { Request } from 'express'
+import multer, { type StorageEngine } from 'multer'
 
 const imageStorage: StorageEngine = multer.diskStorage({
-    // destination: (req: Request, file, cb) => {
-    //     cb(null, './public/images');
-    // },
-    filename: (req: Request, file, cb) => {
-        cb(null, `${new Date().getTime()}-${file.originalname}`);
-    }
-});
+  // destination: (req: Request, file, cb) => {
+  //     cb(null, './public/images');
+  // },
+  filename: (req: Request, file, cb) => {
+    cb(null, `${new Date().getTime()}-${file.originalname}`)
+  }
+})
 
-const handleImage = multer({ storage: imageStorage }).single('image_url');
+const handleImage = multer({ storage: imageStorage }).single('image_url')
 
-export default handleImage;
+export default handleImage

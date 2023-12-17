@@ -20,5 +20,10 @@
         "@typescript-eslint/prefer-optional-chain": "off",
         "@typescript-eslint/no-useless-catch": "off",
         "@typescript-eslint/naming-convention": "off"
-    }
+    },
+    "settings": {
+        "react": {
+          "version": "detect"
+        }
+      }
 }

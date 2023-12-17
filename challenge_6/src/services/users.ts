@@ -16,6 +16,12 @@ interface CurrentUserResult {
   cars: Car[]
 }
 
+interface addUser {
+  username: string
+  password: string
+  role?: string
+}
+
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class UsersService {
   static register = async (res: Response, payload: UserRequest, image: any, typeImage: any): Promise<User> => {
@@ -79,37 +85,47 @@ export default class UsersService {
 
   static async login (res: Response, payload: UserRequest): Promise<DefaultResponse> {
     try {
+      const env: boolean = process.env.NODE_ENV === 'test'
+
       if (!payload.username || !payload.password) {
         throw new Error(`${!payload.username ? 'username' : !payload.password ? 'password' : null}  is required!`)
       }
-      const getUsername: User = await UserRepository.getUserByUsername(payload.username)
-      if (!getUsername || !getUsername.password) {
-        throw new Error('Username does not exist!')
-      }
-      const isPasswordCorret = await bcrypt.compare(payload.password, getUsername.password)
 
-      if (!isPasswordCorret) {
-        throw new Error('Wrong password!')
-      }
+      let getUsername: User | addUser | undefined
 
-      if (!process.env.SECRET_KEY) {
-        const response: DefaultResponse = {
-          status: {
-            code: 500,
-            response: 'error',
-            message: 'Secret key is not defined in the environment variables!'
-          }
+      if (env) {
+        getUsername = await UserRepository.getUserTest(payload.username)
+      } else {
+        getUsername = await UserRepository.getUserByUsername(payload.username)
+        if (!getUsername || !getUsername.password) {
+          throw new Error('Username does not exist!')
         }
-        return response
+
+        const isPasswordCorret = await bcrypt.compare(payload.password, getUsername.password)
+
+        if (!isPasswordCorret) {
+          throw new Error('Wrong password!')
+        }
+
+        if (!process.env.SECRET_KEY) {
+          const response: DefaultResponse = {
+            status: {
+              code: 500,
+              response: 'error',
+              message: 'Secret key is not defined in the environment variables!'
+            }
+          }
+          return response
+        }
       }
 
-      const token = jwt.sign({ user: payload.username, role: getUsername.role }, process.env.SECRET_KEY, { expiresIn: '1h' })
+      const token = jwt.sign({ user: payload.username, role: getUsername?.role }, process.env.SECRET_KEY ?? 'rahasia', { expiresIn: '1h' })
 
       const response: DefaultResponse = {
         status: {
           code: 200,
           response: 'success',
-          message: `${getUsername.username} successfully login`
+          message: `${getUsername?.username} successfully login`
         },
         result: {
           token

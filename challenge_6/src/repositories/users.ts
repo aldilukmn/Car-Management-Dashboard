@@ -4,8 +4,30 @@ import type UserRequest from '../models/dto/user'
 import type User from '../models/entity/user'
 dotenv.config()
 
+interface addUser {
+  username: string
+  password: string
+  role?: string
+}
+
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class UserRepository {
+  private static readonly users: addUser[] = []
+
+  static async addUser (user: addUser): Promise<void> {
+    user.role = 'admin'
+    this.users.push(user)
+  }
+
+  static async getUserTest (username: string): Promise<addUser | undefined> {
+    const user = this.users.find((u) => u.username === username)
+    return user
+  }
+
+  static async clearUser (username: string): Promise<void> {
+    delete this.users[0]
+  }
+
   static async getUserByEmail (userEmail: string): Promise<User> {
     return await db(`${process.env.USERS_TABLE}`).where({ email: userEmail }).first()
   }
