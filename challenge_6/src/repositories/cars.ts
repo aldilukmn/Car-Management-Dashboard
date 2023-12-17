@@ -1,48 +1,63 @@
-import db from "../../config/knex";
-import dotenv from "dotenv";
-import { CarRequest } from "../models/dto/car";
+import db from '../../config/knex'
+import dotenv from 'dotenv'
+import type { CarRequest } from '../models/dto/car'
+import type Car from '../models/entity/car'
 dotenv.config()
 
-export default class CarRepository {
-  static async getAllCars(getOffSet: number, perPage: number) {
-    const cars = await db.select("*").where({is_deleted: false}).limit(perPage).offset(getOffSet).from(`${process.env.CARS_TABLE}`);
+interface CurrentCarsResult {
+  cars: Car[]
+  total?: number
+}
 
-    const totalData = await db(`${process.env.CARS_TABLE}`).count().where({is_deleted: false}).first();
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+export default class CarRepository {
+  static async getAllCars (getOffSet: number, perPage: number): Promise<CurrentCarsResult> {
+    const cars = await db.select('*').where({ is_deleted: false }).limit(perPage).offset(getOffSet).from(`${process.env.CARS_TABLE}`)
+
+    const totalData = await db(`${process.env.CARS_TABLE}`).count().where({ is_deleted: false }).first()
 
     return {
-      cars: cars,
+      cars: cars as Car[],
       total: Number(totalData?.count)
     }
   }
 
-  static async getCarByAddedBy(getOffSet: number, perPage: number, user?: string) {
-    const cars = await db.select("*").where({  added_by: user, is_deleted: false}).limit(perPage).offset(getOffSet).from(`${process.env.CARS_TABLE}`);
+  static async getCarByAddedBy (getOffSet: number, perPage: number, user?: string): Promise<CurrentCarsResult> {
+    const isUser = user ? { added_by: user } : { created_by: 'admin' }
 
-    const totalData = await db(`${process.env.CARS_TABLE}`).count().where({  added_by: user, is_deleted: false}).first(); 
+    const cars = await db
+      .select('*')
+      .where(isUser)
+      .andWhere({ is_deleted: false })
+      .limit(perPage)
+      .offset(getOffSet)
+      .from(`${process.env.CARS_TABLE}`)
+
+    const totalData = await db(`${process.env.CARS_TABLE}`).count().where({ added_by: user ?? '', is_deleted: false }).first()
 
     return {
-      cars: cars,
-      total: Number(totalData?.count),
+      cars: cars as Car[],
+      total: Number(totalData?.count)
     }
   }
 
-  static async getCarById(carId: number) {
-    return await db(`${process.env.CARS_TABLE}`).where({ id: carId }).first();
+  static async getCarById (carId: number): Promise<Car> {
+    return await db(`${process.env.CARS_TABLE}`).where({ id: carId }).first()
   }
 
-  static async createCar(data: CarRequest) {
-    return await db(`${process.env.CARS_TABLE}`).insert(data);
+  static async createCar (data: CarRequest): Promise<void> {
+    await db(`${process.env.CARS_TABLE}`).insert(data)
   }
 
-  static async updateCar(cardId?: number, data?: CarRequest) {
-    return await db(`${process.env.CARS_TABLE}`).where({ id: cardId }).update(data);
+  static async updateCar (cardId?: number, data?: CarRequest): Promise<CurrentCarsResult> {
+    return await db(`${process.env.CARS_TABLE}`).where({ id: cardId }).update(data)
   }
 
-  static async deleteCar(carId: number) {
-    return await db(`${process.env.CARS_TABLE}`).where({ id: carId }).del();
+  static async deleteCar (carId: number): Promise<CurrentCarsResult> {
+    return await db(`${process.env.CARS_TABLE}`).where({ id: carId }).del()
   }
 
-  static async getCarByUsername(user: string) {
-    return await db(`${process.env.CARS_TABLE}`).where({ added_by: user, is_deleted: false });
+  static async getCarByUsername (user: string): Promise<Car[]> {
+    return await db(`${process.env.CARS_TABLE}`).where({ added_by: user, is_deleted: false })
   }
 }

@@ -1,5 +1,5 @@
-import * as redis from "redis";
+import * as redis from 'redis'
 
-const client = redis.createClient();
+const client = redis.createClient()
 
-export default client;
+export default client

@@ -1,8 +1,10 @@
-========FRONT-END========
+# Note
 
-# Dashboard
+![Note](If you find an error after npm i / install then npm run dev on back/front end, just try to remove node_modules and package-lock.json and try npm i / install again)
 
-![Dashboard](result_img/profile-page.png)
+# Profil Page
+
+![Profil Page](result_img/profile-page.png)
 
 # List Car
 

@@ -114,7 +114,7 @@ function ListCar({sizeFilter}: { sizeFilter: string }) {
       {messageFail && <Alert msg={messageFail} className='mb-4 rounded bg-black py-2 text-white absolute w-1/2 left-1/3 text-center font-semibold top-24'/>}
       {messageSuccess && <Alert msg={messageSuccess} className='mb-4 rounded bg-green-500 py-2 text-white absolute w-1/2 left-1/3 text-center font-semibold top-24'/>}
       <div className={`p-4 rounded border`}>
-        <div className={`${cars.length !== 0 ? 'grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-5' : 'h-96'}`}>
+        <div className={`${cars.length !== 0 ? 'grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-5' : 'h-52'}`}>
           {cars.length !== 0 ? cars.map((car, index) => {
             return (
               <div className='border rounded shadow' key={index}>
@@ -155,9 +155,9 @@ function ListCar({sizeFilter}: { sizeFilter: string }) {
         </div>
         <Gap height={30}/>
         <div className="flex gap-5 justify-center items-center">
-          <Button name='Prev Page' className={`text-white py-1 px-2 rounded ${page <= 1 || Boolean(search) ? 'bg-blue-400' : 'bg-blue-700'}`} onClick={handlePrevPage} disabled={page <= 1 || Boolean(search)}/>
+          <Button name='Prev Page' className={`text-white py-1 px-2 rounded ${page <= 1 || Boolean(search) ? 'bg-blue-500' : 'bg-blue-700'}`} onClick={handlePrevPage} disabled={page <= 1 || Boolean(search)}/>
           <Text text={`${page <= totalPage ? page : totalPage} / ${totalPage}`} classname='font-semibold'/>
-          <Button name='Next Page' className={`text-white px-2 py-1 rounded ${page >= totalPage ? 'bg-blue-400' : 'bg-blue-700'}`} onClick={handleNextPage} disabled={page >= totalPage}/>
+          <Button name='Next Page' className={`text-white px-2 py-1 rounded ${page >= totalPage ? 'bg-blue-500' : 'bg-blue-700'}`} onClick={handleNextPage} disabled={page >= totalPage}/>
       </div>
       </div>
     </>
