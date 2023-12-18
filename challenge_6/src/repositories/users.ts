@@ -5,8 +5,9 @@ import type User from '../models/entity/user'
 dotenv.config()
 
 interface addUser {
-  username: string
-  password: string
+  email?: string
+  username?: string
+  password?: string
   role?: string
 }
 
@@ -14,7 +15,7 @@ interface addUser {
 export default class UserRepository {
   private static readonly users: addUser[] = []
 
-  static async addUser (user: addUser): Promise<void> {
+  static async addUserTest (user: addUser): Promise<void> {
     user.role = 'admin'
     this.users.push(user)
   }
@@ -24,7 +25,12 @@ export default class UserRepository {
     return user
   }
 
-  static async clearUser (username: string): Promise<void> {
+  static async getEmailTest (e: string): Promise<addUser | undefined> {
+    const email = this.users.find((u) => u.email === e)
+    return email
+  }
+
+  static async clearUser (): Promise<void> {
     delete this.users[0]
   }
 

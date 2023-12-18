@@ -16,9 +16,10 @@ interface CurrentUserResult {
   cars: Car[]
 }
 
-interface addUser {
-  username: string
-  password: string
+interface addUserTest {
+  email?: string
+  username?: string
+  password?: string
   role?: string
 }
 
@@ -26,6 +27,8 @@ interface addUser {
 export default class UsersService {
   static register = async (res: Response, payload: UserRequest, image: any, typeImage: any): Promise<User> => {
     try {
+      const env: boolean = process.env.NODE_ENV === 'test'
+
       if (!payload.email || !payload.username || !payload.password) {
         throw new Error(`${!payload.email ? 'email' : !payload.username ? 'username' : !payload.password ? 'password' : null} is required!`)
       }
@@ -46,12 +49,31 @@ export default class UsersService {
       //   throw new Error('It's not image format!')
       //   }
 
-      const getUserEmail = await UserRepository.getUserByEmail(payload.email)
+      let getUserEmail: User | addUserTest | undefined
+      let getUserName: User | addUserTest | undefined
+      let hashPassword: string
 
-      const getUserName = await UserRepository.getUserByUsername(payload.username)
+      if (env) {
+        getUserEmail = await UserRepository.getEmailTest(payload.email)
 
-      if (getUserEmail || getUserName) {
-        throw new Error(`${getUserEmail ? 'Email' : 'Username'} already exist!`)
+        getUserName = await UserRepository.getUserTest(payload.username)
+
+        if (getUserEmail ?? getUserName) {
+          throw new Error(`${getUserEmail ? 'Email' : 'Username'} already exist!`)
+        }
+
+        hashPassword = payload.password
+      } else {
+        getUserEmail = await UserRepository.getUserByEmail(payload.email)
+
+        getUserName = await UserRepository.getUserByUsername(payload.username)
+
+        if (getUserEmail || getUserName) {
+          throw new Error(`${getUserEmail ? 'Email' : 'Username'} already exist!`)
+        }
+
+        const salt = await bcrypt.genSalt()
+        hashPassword = await bcrypt.hash(payload.password, salt)
       }
 
       // const imageUrl = await cloudinary.uploader.upload(
@@ -64,9 +86,6 @@ export default class UsersService {
       //     return result
       //   }
       // )
-      const salt = await bcrypt.genSalt()
-      const hashPassword = await bcrypt.hash(payload.password, salt)
-
       const newUser: UserRequest = {
         email: payload.email,
         username: payload.username,
@@ -75,7 +94,7 @@ export default class UsersService {
         role: payload.role ? payload.role : 'admin'
       }
 
-      await UserRepository.createUser(newUser)
+      env ? await UserRepository.addUserTest(newUser) : await UserRepository.createUser(newUser)
 
       return newUser as User
     } catch (error: any) {
@@ -91,10 +110,18 @@ export default class UsersService {
         throw new Error(`${!payload.username ? 'username' : !payload.password ? 'password' : null}  is required!`)
       }
 
-      let getUsername: User | addUser | undefined
+      let getUsername: User | addUserTest | undefined
 
       if (env) {
         getUsername = await UserRepository.getUserTest(payload.username)
+        if (!getUsername || !getUsername.password) {
+          throw new Error('Username does not exist!')
+        }
+
+        const isPasswordCorret = payload.password === getUsername.password
+        if (!isPasswordCorret) {
+          throw new Error('Wrong password!')
+        }
       } else {
         getUsername = await UserRepository.getUserByUsername(payload.username)
         if (!getUsername || !getUsername.password) {
@@ -144,7 +171,7 @@ export default class UsersService {
   }
 
   static async logout (res: Response): Promise<DefaultResponse> {
-    res.clearCookie('Token')
+    // res.clearCookie('Token')
     const response: DefaultResponse = {
       status: {
         code: 200,
