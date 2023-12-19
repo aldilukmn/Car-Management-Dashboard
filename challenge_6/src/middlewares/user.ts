@@ -21,16 +21,16 @@ export default class UserMiddleware {
       if (!token) {
         throw new Error('Please login first!')
       }
-      if (!process.env.SECRET_KEY) {
-        const response: DefaultResponse = {
-          status: {
-            code: 500,
-            response: 'error',
-            message: 'SECRET_KEY is not defined in the environment variables!'
-          }
-        }
-        res.status(500).json(response)
-      }
+      // if (!process.env.SECRET_KEY) {
+      //   const response: DefaultResponse = {
+      //     status: {
+      //       code: 500,
+      //       response: 'error',
+      //       message: 'SECRET_KEY is not defined in the environment variables!'
+      //     }
+      //   }
+      //   res.status(500).json(response)
+      // }
       if (!token.startsWith('Bearer')) {
         throw new Error('Wrong format token!')
       }
@@ -61,16 +61,16 @@ export default class UserMiddleware {
       if (!token) {
         throw new Error('Please login first!')
       }
-      if (!process.env.SECRET_KEY) {
-        const response: DefaultResponse = {
-          status: {
-            code: 500,
-            response: 'error',
-            message: 'SECRET_KEY is not defined in the environment variables!'
-          }
-        }
-        res.status(500).json(response)
-      }
+      // if (!process.env.SECRET_KEY) {
+      //   const response: DefaultResponse = {
+      //     status: {
+      //       code: 500,
+      //       response: 'error',
+      //       message: 'SECRET_KEY is not defined in the environment variables!'
+      //     }
+      //   }
+      //   res.status(500).json(response)
+      // }
       if (!token.startsWith('Bearer')) {
         throw new Error('Wrong format token!')
       }
@@ -114,16 +114,16 @@ export default class UserMiddleware {
       if (!token) {
         throw new Error('Please login first!')
       }
-      if (!process.env.SECRET_KEY) {
-        const response: DefaultResponse = {
-          status: {
-            code: 500,
-            response: 'error',
-            message: 'SECRET_KEY is not defined in the environment variables!'
-          }
-        }
-        res.status(500).json(response)
-      }
+      // if (!process.env.SECRET_KEY) {
+      //   const response: DefaultResponse = {
+      //     status: {
+      //       code: 500,
+      //       response: 'error',
+      //       message: 'SECRET_KEY is not defined in the environment variables!'
+      //     }
+      //   }
+      //   res.status(500).json(response)
+      // }
       if (!token.startsWith('Bearer')) {
         throw new Error('Wrong format token!')
       }

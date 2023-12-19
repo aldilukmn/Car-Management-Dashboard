@@ -18,6 +18,7 @@ describe('JWT Verification for Admin', () => {
     const payload = { user: 'admin', role: 'admin' }
     const secretKey = process.env.SECRET_KEY ?? 'rahasia'
     const token = jwt.sign(payload, secretKey)
+    const decoded = jwt.verify(token, secretKey) as { user: string }
 
     const req: Partial<Request> = {
       headers: {
@@ -35,6 +36,33 @@ describe('JWT Verification for Admin', () => {
     await UserMiddleware.isAdmin(req as Request, res as Response, next)
 
     expect(next).toHaveBeenCalled()
+    expect(decoded.user).toEqual('admin')
+    expect(res.status).not.toHaveBeenCalled()
+  })
+
+  it('should verify invalid decoded token', async () => {
+    const payload = { user: 'admin', role: 'admin' }
+    const secretKey = process.env.SECRET_KEY ?? 'rahasia'
+    const token = jwt.sign(payload, secretKey)
+    const decoded = jwt.verify(token, secretKey) as { user: string }
+
+    const req: Partial<Request> = {
+      headers: {
+        authorization: `Bearer ${token}`
+      }
+    }
+
+    const res: Partial<Response> = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    }
+
+    const next: NextFunction = jest.fn()
+
+    await UserMiddleware.verifyToken(req, res as Response, next)
+
+    expect(next).toHaveBeenCalled()
+    expect(decoded.user).not.toEqual('user')
     expect(res.status).not.toHaveBeenCalled()
   })
 
