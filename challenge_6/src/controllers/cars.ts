@@ -6,7 +6,7 @@ import CarsService from '../services/cars'
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class Cars {
   static listCar = async (req: Request, res: Response): Promise<void> => {
-    const size = req.query.size as string
+    const size = req.query?.size as string
     try {
       const getCar = await CarsService.listCar(size)
       const response: DefaultResponse = {

@@ -55,6 +55,6 @@ export default class UserRepository {
   // }
 
   static async getUsersByRole (userRole: string): Promise<User[]> {
-    return await db(`${process.env.USERS_TABLE}`).whereNot({ role: userRole })
+    return await db(`${process.env.USERS_TABLE}`).where({ role: userRole }).select()
   }
 }

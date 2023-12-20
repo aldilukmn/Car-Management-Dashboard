@@ -5,7 +5,7 @@ import * as jestMock from 'jest-mock'
 const { mocked } = jestMock
 jest.mock('../../../config/knex')
 
-describe('UserRepository', () => {
+describe('User Repository', () => {
   const mockUser: User[] = [{
     id: 1,
     email: 'user@example.com',
@@ -26,41 +26,102 @@ describe('UserRepository', () => {
     username: 'user3',
     password: 'user3password',
     role: 'member'
+  },
+  {
+    id: 4,
+    email: 'user4@example.com',
+    username: 'user4',
+    password: 'user4password',
+    role: 'admin'
   }]
 
-  const createMockQueryBuilder = (mockData: User): any => ({
-    where: jest.fn().mockReturnThis(),
-    first: jest.fn().mockResolvedValueOnce(mockData)
+  const createMockQueryBuilder = (mockData: User[]): any => ({
+    where: jest.fn().mockImplementation((condition) => {
+      if (condition.email) {
+        const findUser = mockData.find((user) => user.email === condition.email)
+        return { first: jest.fn().mockResolvedValueOnce(findUser) }
+      } else if (condition.username) {
+        const findUser = mockData.find((user) => user.username === condition.username)
+        return { first: jest.fn().mockResolvedValueOnce(findUser) }
+      } else if (condition.role) {
+        const filteredUser = mockData.filter((user) => user.role === condition.role)
+        return { select: jest.fn().mockResolvedValueOnce(filteredUser) }
+      }
+    })
   })
 
   it('should return user when getUserByEmail is called with a valid email', async () => {
-    const mockQueryBuilder = createMockQueryBuilder(mockUser[0])
+    const mockQueryBuilder = createMockQueryBuilder(mockUser)
     mocked(db).mockReturnValueOnce(mockQueryBuilder)
+    const byEmai: string = 'user3@example.com'
 
-    const result = await UserRepository.getUserByEmail(mockUser[0].email)
+    const result = await UserRepository.getUserByEmail(byEmai)
 
-    expect(result).toHaveProperty('email', 'user@example.com')
+    expect(result).toBeInstanceOf(Object)
+    expect(result.email).toEqual('user3@example.com')
   })
 
   it('should return user when getUserByUsername is called with a valid username', async () => {
-    const mockQueryBuilder = createMockQueryBuilder(mockUser[1])
+    const mockQueryBuilder = createMockQueryBuilder(mockUser)
     mocked(db).mockReturnValueOnce(mockQueryBuilder)
+    const byUsername: string = 'user2'
 
-    const result = await UserRepository.getUserByUsername(mockUser[1].username)
+    const result = await UserRepository.getUserByUsername(byUsername)
 
-    expect(result).toHaveProperty('username', 'user2')
+    expect(result).toBeInstanceOf(Object)
+    expect(result.username).toEqual('user2')
   })
 
-  it('should return user when getUserByRole is called with a valid email', async () => {
-    const mockockQueryBuilder: any = {
-      whereNot: jest.fn().mockReturnThis(),
-      from: jest.fn().mockResolvedValueOnce(mockUser)
+  it('should return users when getUserByRole is called with a valid email', async () => {
+    const mockQueryBuilder = createMockQueryBuilder(mockUser)
+    mocked(db).mockReturnValueOnce(mockQueryBuilder)
+    const byRole: string = 'admin'
+
+    const result = await UserRepository.getUsersByRole(byRole)
+
+    expect(result).toBeInstanceOf(Array)
+    expect(result.length).toEqual(2)
+  })
+
+  it('should create a new user when createUser is called with valid data', async () => {
+    const newUser: User = {
+      id: 5,
+      email: 'newuser@example.com',
+      username: 'newuser',
+      password: 'newuserpassword',
+      role: 'member'
     }
 
-    mocked(db).mockReturnValueOnce(mockockQueryBuilder)
+    const mockQueryBuilder = {
+      insert: jest.fn().mockImplementation(() => true)
+    }
 
-    const result = await UserRepository.getUsersByRole('admin')
+    mocked(db).mockReturnValueOnce(mockQueryBuilder)
 
-    expect(result).toHaveProperty('role', 'admin')
+    const result = await UserRepository.createUser(newUser)
+    mockUser.push(result)
+
+    expect(mockQueryBuilder.insert).toHaveBeenCalledWith(newUser)
+    expect(result).toEqual(true)
+    expect(mockUser.length).toEqual(5)
+  })
+
+  it('should return users', async () => {
+    const mockQueryBuilder = {
+      select: jest.fn().mockReturnThis(),
+      from: jest.fn().mockReturnThis(),
+      first: jest.fn().mockResolvedValueOnce(mockUser)
+    }
+
+    // Mocking db.select
+    mocked(db).select.mockReturnValueOnce(mockQueryBuilder)
+
+    await UserRepository.getUsers()
+
+    // Verifikasi panggilan fungsi db.select
+    expect(mocked(db).select).toHaveBeenCalledWith('email', 'username', 'role')
+
+    // Verifikasi panggilan fungsi db.from dengan parameter yang benar
+    expect(mockQueryBuilder.from).toHaveBeenCalledWith(process.env.USERS_TABLE)
   })
 })

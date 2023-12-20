@@ -45,8 +45,8 @@ export default class CarRepository {
     return await db(`${process.env.CARS_TABLE}`).where({ id: carId }).first()
   }
 
-  static async createCar (data: CarRequest): Promise<void> {
-    await db(`${process.env.CARS_TABLE}`).insert(data)
+  static async createCar (data: CarRequest): Promise<Car> {
+    return await db(`${process.env.CARS_TABLE}`).insert(data)
   }
 
   static async updateCar (cardId?: number, data?: CarRequest): Promise<CurrentCarsResult> {
@@ -57,7 +57,15 @@ export default class CarRepository {
     return await db(`${process.env.CARS_TABLE}`).where({ id: carId }).del()
   }
 
+  // static async deleteCar (carId: number): Promise<Car[]> {
+  //   await db(`${process.env.CARS_TABLE}`).where({ id: carId }).del()
+  //   return await db(`${process.env.CARS_TABLE}`).select()
+  // }
+
+  // static async getCarByUsername (user: string): Promise<Car[]> {
+  //   return await db(`${process.env.CARS_TABLE}`).where({ added_by: user, is_deleted: false })
+  // }
   static async getCarByUsername (user: string): Promise<Car[]> {
-    return await db(`${process.env.CARS_TABLE}`).where({ added_by: user, is_deleted: false })
+    return await db(`${process.env.CARS_TABLE}`).where({ added_by: user, is_deleted: false }).select()
   }
 }
