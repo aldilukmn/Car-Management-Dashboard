@@ -25,7 +25,7 @@ interface addUserTest {
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class UsersService {
-  static register = async (res: Response, payload: UserRequest, image: any, typeImage: any): Promise<User> => {
+  static register = async (res: Response, payload: UserRequest, image?: any, typeImage?: any): Promise<User> => {
     try {
       const env: boolean = process.env.NODE_ENV === 'test'
 
