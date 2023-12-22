@@ -4,6 +4,7 @@ import type Car from '../../models/entity/car'
 import CarsService from '../../services/cars'
 import Cars from '../cars'
 import type DefaultResponse from '../../models/dto/response'
+import type { CarRequest } from '../../models/dto/car'
 const { mocked } = jestMock
 
 jest.mock('../../services/cars')
@@ -98,12 +99,24 @@ describe('Car Controller', () => {
         updated_at: '2023-11-24 22:51:57.802 +0700'
       }
     }
+
+    const carReq: CarRequest = {
+      name: 'Toyota Camry',
+      rent: 500000,
+      size: 'medium',
+      image_url: 'Camry.png',
+      added_by: 'sandy',
+      created_by: 'admin',
+      updated_by: 'admin',
+      updated_at: '2023-11-24 22:51:57.802 +0700'
+    }
+
     const mockResponse: Partial<Response> = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn()
     }
 
-    mocked(CarsService.createCar).mockResolvedValueOnce(mockRequest)
+    mocked(CarsService.createCar).mockResolvedValueOnce(carReq)
 
     await Cars.createCar(mockRequest as Request, mockResponse as Response)
 
@@ -114,7 +127,7 @@ describe('Car Controller', () => {
         response: 'success',
         message: 'Car successfully created'
       },
-      result: mockRequest
+      result: carReq
     })
   })
 

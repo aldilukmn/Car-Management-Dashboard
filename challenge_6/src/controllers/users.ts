@@ -99,7 +99,7 @@ export default class Users {
           cars: data.cars
         }
       }
-      res.status(400).json(response)
+      res.status(200).json(response)
     } catch (error: any) {
       const response: DefaultResponse = {
         status: {

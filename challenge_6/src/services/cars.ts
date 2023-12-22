@@ -46,14 +46,7 @@ export default class CarsService {
         { hour: '2-digit', minute: '2-digit' }
       )}`
       return {
-        id: car.id,
-        name: car.name,
-        rent: car.rent,
-        size: car.size,
-        image_url: car.image_url,
-        added_by: car.added_by,
-        created_by: car.created_by,
-        updated_by: car.updated_by,
+        ...car,
         updated_at: getTime
       }
     })
