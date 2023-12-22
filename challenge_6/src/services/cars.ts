@@ -59,53 +59,21 @@ export default class CarsService {
         ? searchResults
           .filter((car) => car.size === size)
           .map((car) => ({
-            id: car.id,
-            name: car.name,
-            rent: car.rent,
-            size: car.size,
-            image_url: car.image_url,
-            added_by: car.added_by,
-            created_by: car.created_by,
-            updated_by: car.updated_by,
-            updated_at: car.updated_at
+            ...car
           }))
         : searchResults.map((car) => ({
-          id: car.id,
-          name: car.name,
-          rent: car.rent,
-          size: car.size,
-          image_url: car.image_url,
-          added_by: car.added_by,
-          created_by: car.created_by,
-          updated_by: car.updated_by,
-          updated_at: car.updated_at
+          ...car
         }))
 
       totalDataCar = getCar.length
     } else if (size) {
       getCar = convertUpdate.filter((car) => car.size === size).map((car) => ({
-        id: car.id,
-        name: car.name,
-        rent: car.rent,
-        size: car.size,
-        image_url: car.image_url,
-        added_by: car.added_by,
-        created_by: car.created_by,
-        updated_by: car.updated_by,
-        updated_at: car.updated_at
+        ...car
       }))
       totalDataCar = getCar.length
     } else {
       getCar = convertUpdate.map((car) => ({
-        id: car.id,
-        name: car.name,
-        rent: car.rent,
-        size: car.size,
-        image_url: car.image_url,
-        added_by: car.added_by,
-        created_by: car.created_by,
-        updated_by: car.updated_by,
-        updated_at: car.updated_at
+        ...car
       }))
     }
 

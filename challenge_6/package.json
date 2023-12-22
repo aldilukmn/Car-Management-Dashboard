@@ -6,7 +6,7 @@
   "scripts": {
     "migrate": "npx knex migrate:latest --knexfile ./knexfile.ts",
     "rollback": "npx knex migrate:rollback --knexfile ./knexfile.ts",
-    "test": "jest --detectOpenHandles --forceExit ./src",
+    "test": "jest --detectOpenHandles --forceExit --coverage ./src",
     "dev": "nodemon ./src/server.ts",
     "lint": "eslint ./src/**/*.ts",
     "coba": "nodemon ./coba/check.ts"
