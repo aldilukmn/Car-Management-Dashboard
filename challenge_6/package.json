@@ -8,8 +8,8 @@
     "rollback": "npx knex migrate:rollback --knexfile ./knexfile.ts",
     "test": "jest --detectOpenHandles --forceExit --coverage ./src",
     "dev": "nodemon ./src/server.ts",
-    "lint": "eslint ./src/**/*.ts",
-    "coba": "nodemon ./coba/check.ts"
+    "build": "tsc",
+    "lint": "eslint ./src/**/*.ts"
   },
   "author": "aldilukmn",
   "license": "ISC",

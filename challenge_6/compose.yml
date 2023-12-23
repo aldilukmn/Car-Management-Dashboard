@@ -1,0 +1,14 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: postgres
+      POSTGRES_DB: binar_rental_car
+    ports:
+    - 5432:5432
+  app:
+    image: challenge_8
+    ports:
+      - 8084:8084
