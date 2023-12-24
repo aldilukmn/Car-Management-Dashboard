@@ -6,7 +6,7 @@
 
 # Public Access API
 
-![Public Access API](via-website-access.png)
+![Public Access API](result_img/via-website-access.png)
 
 # Coverage Test
 
