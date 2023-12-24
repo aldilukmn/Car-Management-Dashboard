@@ -40,12 +40,12 @@ const config: Record<string, Knex.Config> = {
   },
 
   production: {
-    client: 'postgresql',
+    client: process.env.DB_CLIENT_PRODUCTION,
     connection: {
-      database: 'verceldb',
-      user: 'default',
-      password: '1wcXfWvNRri5',
-      host: 'ep-shrill-meadow-43622238-pooler.ap-southeast-1.postgres.vercel-storage.com',
+      database: process.env.DB_NAME_PRODUCTION,
+      user: process.env.DB_USER_PRODUCTION,
+      password: process.env.DB_PASSWORD_PRODUCTION,
+      host: process.env.DB_HOST_PROUCTION,
       ssl: { rejectUnauthorized: false }, // Set rejectUnauthorized to false to bypass self-signed certificate issues
       sslmode: 'require'
     } as any,
