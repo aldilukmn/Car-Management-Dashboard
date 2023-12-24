@@ -32,6 +32,8 @@ export default class CarsService {
       totalDataCar = getData.total
     }
 
+    if (!getCar) throw new Error('Data not Found!')
+
     getCar.sort((a, b) => {
       const dateA = new Date(a.updated_at).getTime()
       const dateB = new Date(b.updated_at).getTime()
@@ -134,10 +136,12 @@ export default class CarsService {
   static getCarById = async (carId: number): Promise<Car> => {
     try {
       const getCar = await CarRepository.getCarById(carId)
-      const { id, name, rent, size, image_url, added_by, created_by, updated_by, updated_at } = getCar
+
       if (!getCar) {
-        throw new Error('Car not found')
+        throw new Error('Car not found!')
       }
+
+      const { id, name, rent, size, image_url, added_by, created_by, updated_by, updated_at } = getCar
 
       const getDate = new Date(updated_at)
       const monthName = getDate.toLocaleString('id-ID', { month: 'long' })
@@ -184,11 +188,7 @@ export default class CarsService {
         deleted_at: new Date().toISOString()
       }
 
-      const deleteCar = await CarRepository.updateCar(carId, updateCar)
-
-      if (!deleteCar) {
-        throw new Error('Car not found!')
-      }
+      await CarRepository.updateCar(carId, updateCar)
 
       const response: DefaultResponse = {
         status: {

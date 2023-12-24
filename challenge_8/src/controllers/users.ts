@@ -10,10 +10,10 @@ dotenv.config()
 export default class Users {
   static register = async (req: Request, res: Response): Promise<any> => {
     const payload: UserRequest = req.body
-    const image: any = req.file?.path
-    const typeImage: any = req.file?.mimetype
+    // const image: any = req.file?.path
+    // const typeImage: any = req.file?.mimetype
     try {
-      const newUser = await UsersService.register(res, payload, image, typeImage)
+      const newUser = await UsersService.register(payload)
       const response: DefaultResponse = {
         status: {
           code: 201,
@@ -38,7 +38,7 @@ export default class Users {
   static login = async (req: Request, res: Response): Promise<void> => {
     const payload: UserRequest = req.body
     try {
-      const response = await UsersService.login(res, payload)
+      const response = await UsersService.login(payload)
       res.status(200).json(response)
     } catch (error: any) {
       const response: DefaultResponse = {

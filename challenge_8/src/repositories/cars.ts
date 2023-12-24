@@ -24,7 +24,6 @@ export default class CarRepository {
 
   static async getCarByAddedBy (getOffSet: number, perPage: number, user?: string): Promise<CurrentCarsResult> {
     const isUser = user ? { added_by: user } : { created_by: 'admin' }
-
     const cars = await db
       .select('*')
       .where(isUser)
@@ -49,7 +48,7 @@ export default class CarRepository {
     return await db(`${process.env.CARS_TABLE}`).insert(data)
   }
 
-  static async updateCar (cardId?: number, data?: CarRequest): Promise<CurrentCarsResult> {
+  static async updateCar (cardId?: number, data?: CarRequest): Promise<Car> {
     return await db(`${process.env.CARS_TABLE}`).where({ id: cardId }).update(data)
   }
 
